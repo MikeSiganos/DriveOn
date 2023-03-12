@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MapsActivity">
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/mapExtendedFAB"
+        android:layout_width="240dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="35dp"
+        android:contentDescription="@string/extended_fab_label"
+        android:gravity="center"
+        android:text="@string/extended_fab_label"
+        app:icon="@android:drawable/ic_menu_compass"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ProgressBar
+        android:id="@+id/accelerometerProgressBar"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|center_vertical"
+        android:layout_marginStart="-70dp"
+        android:rotation="270"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/settingsExtendedFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/map_options"
+        app:icon="@drawable/ic_baseline_car_crash_24"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/screenOnFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:contentDescription="@string/screen_on"
+        app:fabSize="normal"
+        app:layout_constraintBottom_toTopOf="@id/settingsExtendedFab"
+        app:layout_constraintEnd_toEndOf="@id/settingsExtendedFab"
+        app:srcCompat="@android:drawable/ic_menu_manage" />
+
+    <TextView
+        android:id="@+id/screenOnActionText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="@string/screen_on"
+        android:textColor="@color/white_overlay"
+        app:layout_constraintBottom_toBottomOf="@id/screenOnFab"
+        app:layout_constraintEnd_toStartOf="@id/screenOnFab"
+        app:layout_constraintTop_toTopOf="@id/screenOnFab" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/uploadDataFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:contentDescription="@string/upload_data"
+        app:fabSize="normal"
+        app:layout_constraintBottom_toTopOf="@id/screenOnFab"
+        app:layout_constraintEnd_toEndOf="@id/screenOnFab"
+        app:layout_constraintStart_toStartOf="@id/screenOnFab"
+        app:srcCompat="@android:drawable/ic_menu_upload" />
+
+    <TextView
+        android:id="@+id/uploadDataActionText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="@string/upload_data"
+        android:textColor="@color/white_overlay"
+        app:layout_constraintBottom_toBottomOf="@id/uploadDataFab"
+        app:layout_constraintEnd_toStartOf="@id/uploadDataFab"
+        app:layout_constraintTop_toTopOf="@id/uploadDataFab" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/reportIncidentFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:contentDescription="@string/report_incident"
+        app:backgroundTint="@color/gray"
+        app:fabSize="normal"
+        app:layout_constraintBottom_toTopOf="@id/uploadDataFab"
+        app:layout_constraintEnd_toEndOf="@id/uploadDataFab"
+        app:layout_constraintStart_toStartOf="@id/uploadDataFab"
+        app:srcCompat="@android:drawable/ic_menu_report_image"
+        app:tint="@color/white_overlay" />
+
+    <TextView
+        android:id="@+id/reportIncidentActionText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="@string/report_incident"
+        android:textColor="@color/white_overlay"
+        app:layout_constraintBottom_toBottomOf="@id/reportIncidentFab"
+        app:layout_constraintEnd_toStartOf="@id/reportIncidentFab"
+        app:layout_constraintTop_toTopOf="@id/reportIncidentFab" />
+</androidx.constraintlayout.widget.ConstraintLayout>

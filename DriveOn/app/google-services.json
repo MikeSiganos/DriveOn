@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "730807943881",
+    "project_id": "drive-on-mscsd",
+    "storage_bucket": "drive-on-mscsd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:730807943881:android:b5c8b3dc855a50e0bb8318",
+        "android_client_info": {
+          "package_name": "com.msiganos.driveon"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "730807943881-9fsn48bpl3a0sv042htbi7cgrl0m4d9e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDabWZWtLBzizPxYoMJnSLGmRo-7F0HzRQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "730807943881-9fsn48bpl3a0sv042htbi7cgrl0m4d9e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
