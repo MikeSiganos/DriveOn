@@ -253,8 +253,6 @@ public class SystemHelper {
         try {
             switch (requestCode) {
                 case LOCATION_PERMISSION_REQUEST_CODE:
-                    // Location permissions
-                    permissionGranted = false;
                     // Check user's location permissions
                     if (getGPSConnection()) {
                         // GPS enabled

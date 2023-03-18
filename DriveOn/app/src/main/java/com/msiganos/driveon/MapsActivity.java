@@ -88,8 +88,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private FirebaseUser mUser;
     private DatabaseReference mDatabaseReference;
     private LocationManager locationManager;
-    private String BEST_LOCATION_PROVIDER;
-    private List<String> LOCATION_PROVIDERS;
+    private Criteria locationProviderCriteria;
+    private String bestLocationProvider;
+    private List<String> locationProviders;
     private SensorManager sensorManager;
     private Sensor accelerometerSensor;
     private SharedPreferences sharedPreferences;
@@ -168,7 +169,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Runnable timerRunnable;
     private ArrayList<Double> speedList;
     private boolean accelerometerAvailable, visibleCustomFab, screenOn, uploadData, useCustomMyLocationIndicator;
-    private double HUMAN_SPEED_CONVERTER, currentSpeed, lastSpeed, currentBearing, lastBearing, mAccel, mAccelCurrent, mAccelLast, sumSpeed;
+    private double human_speed_converter, currentSpeed, lastSpeed, currentBearing, lastBearing, mAccel, mAccelCurrent, mAccelLast, sumSpeed;
     private final LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationChanged(final Location location) {
@@ -183,7 +184,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     // Get last speed
                     lastSpeed = currentSpeed;
                     // Get current speed | kmhSpeed = 3.6 * speed | mileSpeed = 2.23694 * speed
-                    currentSpeed = BigDecimal.valueOf(currentLocation.getSpeed() * HUMAN_SPEED_CONVERTER).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    currentSpeed = BigDecimal.valueOf(currentLocation.getSpeed() * human_speed_converter).setScale(2, RoundingMode.HALF_UP).doubleValue();
                     // Get last bearing
                     lastBearing = currentBearing;
                     // Get current bearing
@@ -230,14 +231,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                     // Detect traffic
                     if (currentSpeed < 20) {
-                        Log.i("Traffic", "Traffic detected - Timer: " + trafficSecondsTimer + " - Location: " + currentLocation.getLatitude() + ";" + currentLocation.getLongitude() + " - Speed: " + currentLocation.getSpeed());
+                        // Log.i("Traffic", "Traffic detected - Timer: " + trafficSecondsTimer + " - Location: " + currentLocation.getLatitude() + ";" + currentLocation.getLongitude() + " - Speed: " + currentLocation.getSpeed());
                         timerHandler.postDelayed(timerRunnable, 1000);
-                        if (trafficSecondsTimer == 0) {
+                        if (trafficSecondsTimer == 1) {
                             Log.i("Traffic", "First detected traffic - Timer: " + trafficSecondsTimer + " - Location: " + currentLocation.getLatitude() + ";" + currentLocation.getLongitude() + " - Speed: " + currentLocation.getSpeed());
                             trafficStart = currentLocation;
                         }
                     } else {
-                        Log.i("Traffic", "No traffic detected - Timer: " + trafficSecondsTimer + " - Location: " + currentLocation.getLatitude() + ";" + currentLocation.getLongitude() + " - Speed: " + currentLocation.getSpeed());
+                        // Log.i("Traffic", "No traffic detected - Timer: " + trafficSecondsTimer + " - Location: " + currentLocation.getLatitude() + ";" + currentLocation.getLongitude() + " - Speed: " + currentLocation.getSpeed());
                         timerHandler.removeCallbacks(timerRunnable);
                         trafficEnd = currentLocation;
                         if (trafficSecondsTimer > 100 && trafficStart != null && trafficEnd != null) {
@@ -400,20 +401,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Set LocationManager
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         // Set LocationProviders
-        Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        criteria.setBearingAccuracy(Criteria.ACCURACY_HIGH);
-        criteria.setHorizontalAccuracy(Criteria.ACCURACY_HIGH);
-        criteria.setSpeedAccuracy(Criteria.ACCURACY_HIGH);
-        criteria.setVerticalAccuracy(Criteria.ACCURACY_HIGH);
-        criteria.setPowerRequirement(Criteria.POWER_LOW);
-        criteria.setSpeedRequired(true);
-        criteria.setAltitudeRequired(true);
-        criteria.setBearingRequired(true);
-        criteria.setCostAllowed(false);
-        BEST_LOCATION_PROVIDER = locationManager.getBestProvider(criteria, true);
-        LOCATION_PROVIDERS = locationManager.getProviders(true);
-        Log.i("LocationProviders", "Best provider: " + BEST_LOCATION_PROVIDER);
+        locationProviderCriteria = new Criteria();
+        locationProviderCriteria.setAccuracy(Criteria.ACCURACY_FINE);
+        locationProviderCriteria.setBearingAccuracy(Criteria.ACCURACY_HIGH);
+        locationProviderCriteria.setHorizontalAccuracy(Criteria.ACCURACY_HIGH);
+        locationProviderCriteria.setSpeedAccuracy(Criteria.ACCURACY_HIGH);
+        locationProviderCriteria.setVerticalAccuracy(Criteria.ACCURACY_HIGH);
+        locationProviderCriteria.setPowerRequirement(Criteria.POWER_LOW);
+        locationProviderCriteria.setSpeedRequired(true);
+        locationProviderCriteria.setAltitudeRequired(true);
+        locationProviderCriteria.setBearingRequired(true);
+        locationProviderCriteria.setCostAllowed(false);
+        bestLocationProvider = locationManager.getBestProvider(locationProviderCriteria, true);
+        locationProviders = locationManager.getProviders(true);
+        Log.i("LocationProviders", "Best provider: " + bestLocationProvider);
         // Set SensorManager
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         // Set Accelerometer & acceleration values
@@ -439,7 +440,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         };
         // Set speeds
-        HUMAN_SPEED_CONVERTER = 3.6;  // kmhSpeed = 3.6 * speed | mileSpeed = 2.23694 * speed
+        human_speed_converter = 3.6;  // kmhSpeed = 3.6 * speed | mileSpeed = 2.23694 * speed
         currentSpeed = 0;
         lastSpeed = 0;
         currentBearing = 0;
@@ -625,40 +626,45 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void updateLocation() {
         // After checking location permissions Update current location
-        if (mSystem.getPermissions(LOCATION_PERMISSION_REQUEST_CODE)) {
-            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                    ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
-                return;
-            }
-            if (gMap != null && !useCustomMyLocationIndicator) {
-                Log.i("Map", "MyLocation enabled on map");
-                gMap.setMyLocationEnabled(true);
-            }
-            locationManager.requestLocationUpdates(BEST_LOCATION_PROVIDER, MIN_MILLISECONDS_BETWEEN_GPS_UPDATES, MIN_METERS_FOR_GPS_UPDATES, locationListener);
-            lastKnownLocation = locationManager.getLastKnownLocation(BEST_LOCATION_PROVIDER);
-            if (lastKnownLocation != null) {
-                if (bestLocation == null || lastKnownLocation.getAccuracy() < bestLocation.getAccuracy()) {
-                    bestLocation = lastKnownLocation;
+        try {
+            if (mSystem.getPermissions(LOCATION_PERMISSION_REQUEST_CODE)) {
+                if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                        ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+                    return;
                 }
-            } else {
-                for (String provider : LOCATION_PROVIDERS) {
-                    Log.i("LocationProviders", "Current provider: " + provider);
-                    locationManager.requestLocationUpdates(provider, MIN_MILLISECONDS_BETWEEN_GPS_UPDATES, MIN_METERS_FOR_GPS_UPDATES, locationListener);
-                    lastKnownLocation = locationManager.getLastKnownLocation(provider);
+                if (gMap != null && !useCustomMyLocationIndicator) {
+                    Log.i("Map", "MyLocation enabled on map");
+                    gMap.setMyLocationEnabled(true);
+                }
+                bestLocationProvider = locationManager.getBestProvider(locationProviderCriteria, true);
+                locationProviders = locationManager.getProviders(true);
+                Log.i("LocationProviders", "Best provider: " + bestLocationProvider);
+                if (bestLocationProvider != null) {
+                    locationManager.requestLocationUpdates(bestLocationProvider, MIN_MILLISECONDS_BETWEEN_GPS_UPDATES, MIN_METERS_FOR_GPS_UPDATES, locationListener);
+                    lastKnownLocation = locationManager.getLastKnownLocation(bestLocationProvider);
                     if (lastKnownLocation != null) {
                         if (bestLocation == null || lastKnownLocation.getAccuracy() < bestLocation.getAccuracy())
                             bestLocation = lastKnownLocation;
                     }
+                } else if (locationProviders != null) {
+                    for (String provider : locationProviders) {
+                        Log.i("LocationProviders", "Current provider: " + provider);
+                        locationManager.requestLocationUpdates(provider, MIN_MILLISECONDS_BETWEEN_GPS_UPDATES, MIN_METERS_FOR_GPS_UPDATES, locationListener);
+                        lastKnownLocation = locationManager.getLastKnownLocation(provider);
+                        if (lastKnownLocation != null) {
+                            if (bestLocation == null || lastKnownLocation.getAccuracy() < bestLocation.getAccuracy())
+                                bestLocation = lastKnownLocation;
+                        }
+                    }
+                } else {
+                    Toast.makeText(MapsActivity.this, getString(R.string.no_gps_error), Toast.LENGTH_SHORT).show();
+                    Log.w("LocationProviders", "No location providers found");
                 }
             }
-            if (bestLocation != null) {
-                Log.i("Location", "Best location found");
-            } else {
-                Log.w("Location", "Best location not found");
-                Toast.makeText(MapsActivity.this, getString(R.string.no_location), Toast.LENGTH_SHORT).show();
-            }
+        } catch (Exception e) {
+            Log.e("Permissions", "Update location - permissions exception", e);
         }
     }
 
