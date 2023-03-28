@@ -38,6 +38,8 @@ import java.util.Locale;
 public class SystemHelper {
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 901;
+    private static final int CALL_PERMISSION_REQUEST_CODE = 801;
+    private static final int SMS_PERMISSION_REQUEST_CODE = 802;
     private final Context context;
     private final Activity activity;
     private final LocationManager locationManager;
@@ -265,13 +267,48 @@ public class SystemHelper {
                                 ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.ACCESS_COARSE_LOCATION)) {
                             // Permissions not granted but explain user
                             Log.w("Permissions", "Location permissions still not granted");
-                            showPermissionsAlertDialog(context.getString(R.string.no_gps_connection), context.getString(R.string.location_permissions), LOCATION_PERMISSION_REQUEST_CODE);
+                            showPermissionsAlertDialog(context.getString(R.string.no_permissions), context.getString(R.string.location_permissions), LOCATION_PERMISSION_REQUEST_CODE);
                         } else {
                             // Ask for location permissions
                             Log.w("Permissions", "Location permissions not granted");
                             ActivityCompat.requestPermissions(activity,
                                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
                         }
+                    }
+                    break;
+                case CALL_PERMISSION_REQUEST_CODE:
+                    // Check user's call permissions
+                    if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED &&
+                            ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PRIVILEGED) == PackageManager.PERMISSION_GRANTED) {
+                        // Permissions granted
+                        Log.i("Permissions", "Call permissions granted");
+                        permissionGranted = true;
+                    } else if (ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.CALL_PHONE)) {
+                        // Permissions not granted but explain user
+                        Log.w("Permissions", "Call permissions still not granted");
+                        showPermissionsAlertDialog(context.getString(R.string.no_permissions), context.getString(R.string.call_permissions), CALL_PERMISSION_REQUEST_CODE);
+                    } else {
+                        // Ask for call permissions
+                        Log.w("Permissions", "Call permissions not granted");
+                        ActivityCompat.requestPermissions(activity,
+                                new String[]{Manifest.permission.CALL_PHONE, Manifest.permission.CALL_PRIVILEGED}, CALL_PERMISSION_REQUEST_CODE);
+                    }
+                    break;
+                case SMS_PERMISSION_REQUEST_CODE:
+                    // Check user's sms permissions
+                    if (ContextCompat.checkSelfPermission(context, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED) {
+                        // Permissions granted
+                        Log.i("Permissions", "SMS permissions granted");
+                        permissionGranted = true;
+                    } else if (ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.SEND_SMS)) {
+                        // Permissions not granted but explain user
+                        Log.w("Permissions", "SMS permissions still not granted");
+                        showPermissionsAlertDialog(context.getString(R.string.no_permissions), context.getString(R.string.sms_permissions), SMS_PERMISSION_REQUEST_CODE);
+                    } else {
+                        // Ask for sms permissions
+                        Log.w("Permissions", "SMS permissions not granted");
+                        ActivityCompat.requestPermissions(activity,
+                                new String[]{Manifest.permission.SEND_SMS}, SMS_PERMISSION_REQUEST_CODE);
                     }
                     break;
                 default:

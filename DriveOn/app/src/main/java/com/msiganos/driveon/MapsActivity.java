@@ -1,6 +1,8 @@
 package com.msiganos.driveon;
 
 import android.Manifest;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
@@ -17,6 +19,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -28,11 +31,13 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
@@ -81,6 +86,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final int MIN_MILLISECONDS_BETWEEN_GPS_UPDATES = 100;
     private static final int MIN_METERS_FOR_GPS_UPDATES = 0;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 901;
+    private static final int CALL_PERMISSION_REQUEST_CODE = 801;
+    private static final int SMS_PERMISSION_REQUEST_CODE = 802;
     private GoogleMap gMap;
     private ActivityMapsBinding binding;
     private Marker mPositionMarker;
@@ -118,17 +125,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // Show custom progressbar
                 accelerometerProgressBar.setProgress((int) Math.abs(mAccel));
                 if (Math.abs(mAccel) >= 15) {
-                    // High acceleration/deceleration
+                    // High
+                    if (Math.abs(mAccel) >= 25)
+                        sosDialog();
                     progressDrawable.setColorFilter(BlendModeColorFilterCompat.createBlendModeColorFilterCompat(ResourcesCompat.getColor(getResources(), R.color.red, getTheme()), BlendModeCompat.SRC_IN));
                     Log.i("Sensors", "The accelerator sensor has changed: x: " + x + " y: " + y + " z: " + z + " Absolute Acceleration: " + Math.abs(mAccel));
                 } else if (Math.abs(mAccel) >= 10) {
-                    // Mid acceleration/deceleration
+                    // Mid
                     progressDrawable.setColorFilter(BlendModeColorFilterCompat.createBlendModeColorFilterCompat(ResourcesCompat.getColor(getResources(), R.color.yellow, getTheme()), BlendModeCompat.SRC_IN));
                 } else if (Math.abs(mAccel) >= 5) {
-                    // Small acceleration/deceleration
+                    // Small
                     progressDrawable.setColorFilter(BlendModeColorFilterCompat.createBlendModeColorFilterCompat(ResourcesCompat.getColor(getResources(), R.color.green, getTheme()), BlendModeCompat.SRC_IN));
                 } else {
-                    // No acceleration/deceleration
+                    // Nothing
                     progressDrawable.setColorFilter(BlendModeColorFilterCompat.createBlendModeColorFilterCompat(ResourcesCompat.getColor(getResources(), R.color.gray, getTheme()), BlendModeCompat.SRC_IN));
                 }
                 accelerometerProgressBar.setProgressDrawable(progressDrawable);
@@ -169,7 +178,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Runnable timerRunnable;
     private ArrayList<Double> speedList;
     private boolean accelerometerAvailable, visibleCustomFab, screenOn, uploadData, useCustomMyLocationIndicator;
-    private double human_speed_converter, currentSpeed, lastSpeed, currentBearing, lastBearing, mAccel, mAccelCurrent, mAccelLast, sumSpeed;
+    private double HUMAN_SPEED_CONVERTER, currentSpeed, lastSpeed, currentBearing, lastBearing, mAccel, mAccelCurrent, mAccelLast, sumSpeed;
     private final LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationChanged(final Location location) {
@@ -184,7 +193,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     // Get last speed
                     lastSpeed = currentSpeed;
                     // Get current speed | kmhSpeed = 3.6 * speed | mileSpeed = 2.23694 * speed
-                    currentSpeed = BigDecimal.valueOf(currentLocation.getSpeed() * human_speed_converter).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                    currentSpeed = BigDecimal.valueOf(currentLocation.getSpeed() * HUMAN_SPEED_CONVERTER).setScale(2, RoundingMode.HALF_UP).doubleValue();
                     // Get last bearing
                     lastBearing = currentBearing;
                     // Get current bearing
@@ -440,7 +449,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         };
         // Set speeds
-        human_speed_converter = 3.6;  // kmhSpeed = 3.6 * speed | mileSpeed = 2.23694 * speed
+        HUMAN_SPEED_CONVERTER = 3.6;  // kmhSpeed = 3.6 * speed | mileSpeed = 2.23694 * speed
         currentSpeed = 0;
         lastSpeed = 0;
         currentBearing = 0;
@@ -707,6 +716,45 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         Log.w("Permissions", "Location permissions with empty grantResults");
                     }
                     break;
+                case CALL_PERMISSION_REQUEST_CODE:
+                    // Call Permissions
+                    if (grantResults.length > 0) {
+                        boolean callPhonePermission = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                        boolean callPrivilegedPermission = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+                        if (callPhonePermission && callPrivilegedPermission) {
+                            // Call permission already given - Make call
+                            Log.i("Permissions", "Call permissions already granted");
+                            // Call location listener
+                            callHelp();
+                        } else {
+                            // Ask for call permission again - Call unavailable until call permission granted
+                            Log.w("Permissions", "Call permissions not granted again");
+                            mSystem.getPermissions(CALL_PERMISSION_REQUEST_CODE);
+                        }
+                    } else {
+                        // No grantResults for call permissions
+                        Log.w("Permissions", "Call permissions with empty grantResults");
+                    }
+                    break;
+                case SMS_PERMISSION_REQUEST_CODE:
+                    // SMS Permissions
+                    if (grantResults.length > 0) {
+                        boolean sendSMSPermission = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                        if (sendSMSPermission) {
+                            // SMS permission already given - Send SmS
+                            Log.i("Permissions", "SMS permissions already granted");
+                            // Send SMS
+                            sendSOSMessage();
+                        } else {
+                            // Ask for SMS permission again - SMS unavailable until SMS permission granted
+                            Log.w("Permissions", "SMS permissions not granted again");
+                            mSystem.getPermissions(SMS_PERMISSION_REQUEST_CODE);
+                        }
+                    } else {
+                        // No grantResults for SMS permissions
+                        Log.w("Permissions", "SMS permissions with empty grantResults");
+                    }
+                    break;
                 default:
                     Log.w("Permissions", "Unknown permission request code");
             }
@@ -865,5 +913,120 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
         });
+    }
+
+    private void sosDialog() {
+        LinearLayout linearLayout = new LinearLayout(MapsActivity.this);
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
+        ProgressBar progressBar = new ProgressBar(MapsActivity.this,null, android.R.attr.progressBarStyleHorizontal);
+        progressBar.setMax(600);
+        progressBar.setMin(0);
+        progressBar.setProgress(600);
+        progressBar.setKeepScreenOn(true);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        progressBar.setLayoutParams(lp);
+        linearLayout.addView(progressBar);
+        TextView textView = new TextView(MapsActivity.this);
+        textView.setText(getString(R.string.sos_dialog_message));
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        layoutParams.setMargins(50, 50, 50, 50);
+        textView.setLayoutParams(layoutParams);
+        linearLayout.addView(textView);
+        AlertDialog dialog = new AlertDialog.Builder(MapsActivity.this)
+                .setIcon(android.R.drawable.stat_sys_warning)
+                .setTitle(getString(R.string.sos_dialog_title))
+                .setView(linearLayout)
+                .setPositiveButton(getString(R.string.sos_dialog_ok), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .setNegativeButton(getString(R.string.sos_dialog_get_help), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        sendSOSMessage();
+                    }
+                })
+                .create();
+        Handler dialogHandler = new Handler(Looper.myLooper());
+        Runnable dialogRunnable = new Runnable() {
+            public void run() {
+                if (progressBar.getProgress() > 0)
+                    progressBar.incrementProgressBy(-1);
+                else {
+                    dialog.dismiss();
+                    sendSOSMessage();
+                }
+                dialogHandler.postDelayed(this, 100);
+            }
+        };
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                updateLocation();
+                dialogHandler.removeCallbacks(dialogRunnable);
+            }
+        });
+        dialog.show();
+        locationManager.removeUpdates(locationListener);
+        dialogHandler.postDelayed(dialogRunnable, 600);
+    }
+
+    private void sendSOSMessage() {
+        callHelp();
+        messageHelp();
+    }
+
+    private void callHelp() {
+        // After checking call permissions Call emergency services
+        try {
+            if (mSystem.getPermissions(CALL_PERMISSION_REQUEST_CODE)) {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED &&
+                        ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PRIVILEGED) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.CALL_PHONE, Manifest.permission.CALL_PRIVILEGED}, CALL_PERMISSION_REQUEST_CODE);
+                    return;
+                }
+                Uri callUri = Uri.parse("tel://112");
+                Intent callIntent = new Intent(Intent.ACTION_CALL, callUri);
+                callIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+                startActivity(callIntent);
+                Log.i("SOS", "SOS call made");
+            }
+        } catch (Exception e) {
+            Log.e("Permissions", "Make call - permissions exception", e);
+        }
+    }
+
+    private void messageHelp() {
+        // Send alternative message
+        try {
+            Intent email = new Intent(Intent.ACTION_SEND);
+            email.putExtra(Intent.EXTRA_EMAIL, new String[]{"support@projectjet.gr"});
+            email.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.sos_need_help));
+            email.putExtra(Intent.EXTRA_TEXT, getString(R.string.sos_message));
+            email.setType("message/rfc822");
+            startActivity(Intent.createChooser(email, getString(R.string.sos_dialog_get_help)));
+            Log.i("SOS", "SOS message sent");
+        } catch (Exception e) {
+            Log.e("Permissions", "Send message exception", e);
+        }
+        // After checking sms permissions Send SOS SMS
+        /*try {
+            if (mSystem.getPermissions(SMS_PERMISSION_REQUEST_CODE)) {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.SEND_SMS}, SMS_PERMISSION_REQUEST_CODE);
+                    return;
+                }
+                SmsManager smsManager = SmsManager.getDefault();
+                smsManager.sendTextMessage("+300000000000", null, getString(R.string.sos_message), null, null);
+                Log.i("SOS", "SOS SMS message sent");
+            }
+        } catch (Exception e) {
+            Log.e("Permissions", "Send SMS - permissions exception", e);
+        }*/
     }
 }

@@ -19,7 +19,7 @@
         <!-- Action bar style -->
         <item name="actionBarStyle">@style/CorrectDarkActionBar</item>
     </style>
-
+    <!-- Correct Dark Action Bar -->
     <style name="CorrectDarkActionBar" parent="@style/Widget.MaterialComponents.ActionBar.Surface">
         <item name="titleTextStyle">?attr/textAppearanceHeadline6</item>
         <item name="subtitleTextStyle">?attr/textAppearanceSubtitle1</item>
