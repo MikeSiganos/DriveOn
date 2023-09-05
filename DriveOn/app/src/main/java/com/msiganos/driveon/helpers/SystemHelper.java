@@ -1,7 +1,6 @@
 package com.msiganos.driveon.helpers;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
@@ -25,7 +24,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -151,6 +149,8 @@ public class SystemHelper {
                     urlConnection.connect();
                     internet[0] = urlConnection.getResponseCode() == 204 && urlConnection.getContentLength() == 0;
                     Log.i("Network", "The device is connected to the internet");
+                    // Check for updates
+                    checkForUpdates();
                     // Check firebase realtime database connection
                     getFirebaseConnection();
                     if (firebaseConnection)
@@ -408,16 +408,21 @@ public class SystemHelper {
                         // Toast.makeText(context.getApplicationContext(), context.getString(R.string.message_new_update), Toast.LENGTH_SHORT).show();
                         Log.i("Update", "We found some updates! Let's download & install the new app...");
                         AlertDialog.Builder builder = new AlertDialog.Builder(activity)
-                                .setTitle("\uD83C\uDD95" + context.getString(R.string.app_name))
+                                .setTitle("\uD83C\uDD95 " + context.getString(R.string.app_name))
                                 .setMessage(context.getString(R.string.message_new_update) + System.lineSeparator() + "v" + appVersionCode + " ➠ v" + currentAppVersionCode)
-                                .setNeutralButton(context.getString(R.string.ok), new DialogInterface.OnClickListener() {
+                                .setPositiveButton(context.getString(R.string.ok), new DialogInterface.OnClickListener() {
                                     @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.dismiss();
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        updateApp(updateUrl);
+                                    }
+                                })
+                                .setNegativeButton(context.getString(R.string.update_later), new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        dialogInterface.dismiss();
                                     }
                                 });
                         builder.show();
-                        updateApp(updateUrl);
                     } else {
                         // No updates found
                         Log.i("Update", "We didn't find any updates for this app yet...");
@@ -435,7 +440,6 @@ public class SystemHelper {
         }
     }
 
-    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     protected void updateApp(String updateUrl) {
         if (getPermissions(STORAGE_PERMISSION_REQUEST_CODE)) {
             // Update file path
@@ -461,8 +465,6 @@ public class SystemHelper {
             request.setDescription(context.getString(R.string.update));
             // Set notification visibility
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-            //request.setVisibleInDownloadsUi(false);
-            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
             // Set destination
             request.setDestinationUri(uri);
             // Get download service and enqueue file
@@ -471,23 +473,24 @@ public class SystemHelper {
             // Set BroadcastReceiver to install app when .apk is downloaded
             BroadcastReceiver onComplete = new BroadcastReceiver() {
                 public void onReceive(Context context, Intent intent) {
-                    Intent install = new Intent(Intent.ACTION_VIEW);
-                    install.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    // install.setDataAndType(uri, manager.getMimeTypeForDownloadedFile(downloadId));
-                    Uri apkURI = FileProvider.getUriForFile(
-                            context.getApplicationContext(),
-                            context.getApplicationContext()
-                                    .getPackageName() + ".provider", update_file);
-                    install.setDataAndType(apkURI, manager.getMimeTypeForDownloadedFile(downloadId));
-                    install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    activity.startActivity(install);
-
-                    context.unregisterReceiver(this);
-                    activity.finish();
+                    /*try {
+                        Intent updateIntent = new Intent(Intent.ACTION_VIEW);
+                        updateIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        updateIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        Uri apkURI = FileProvider.getUriForFile(context.getApplicationContext(), context.getApplicationContext().getPackageName() + ".provider", update_file);
+                        updateIntent.setDataAndType(apkURI, manager.getMimeTypeForDownloadedFile(downloadId));
+                        activity.startActivity(updateIntent);
+                        context.getApplicationContext().unregisterReceiver(this);
+                        activity.finish();
+                    } catch (ActivityNotFoundException e) {
+                        Log.e("UpdateIntent", "Start update intent exception", e);
+                        Toast.makeText(context, context.getString(R.string.failed), Toast.LENGTH_SHORT).show();
+                    }*/
+                    Log.i("Update", "Update downloaded successfully");
                 }
             };
             // Register receiver for when .apk download is compete
-            context.registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+            ContextCompat.registerReceiver(context.getApplicationContext(), onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), ContextCompat.RECEIVER_EXPORTED);
         }
     }
 }

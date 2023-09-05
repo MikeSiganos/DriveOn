@@ -41,7 +41,7 @@ public class LoginActivity extends AppCompatActivity {
         systemInit();
         firebaseInit();
         layoutInit();
-        // Get network condition & check for updates
+        // Get network condition & Check for updates
         if (mSystem.getNetworkConnection())
             mSystem.checkForUpdates();
         // If user is already logged in redirect to main activity
@@ -151,7 +151,7 @@ public class LoginActivity extends AppCompatActivity {
                     if (accessFineLocationPermission && accessCoarseLocationPermission) {
                         // Storage permission already given - Check for updates
                         Log.i("Permissions", "Storage permissions already granted");
-                        // Update app
+                        // Check internet connection & Check for app updates
                         if (mSystem.getNetworkConnection())
                             mSystem.checkForUpdates();
                     } else {

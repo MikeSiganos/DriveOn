@@ -143,5 +143,6 @@
     <string name="refreshing_content">Ανανέωση Περιεχομένου</string>
     <string name="select_app">Επιλέξτε μια εφαρμογή</string>
     <string name="update">Λήψη ενημέρωσης…</string>
+    <string name="update_later">Ενημέρωση αργότερα…</string>
     <string name="message_new_update">Βρήκαμε μια νέα ενημέρωση! Ας κατεβάσουμε &amp; εγκαταστήσουμε τη νέα εφαρμογή… 🗘</string>
 </resources>

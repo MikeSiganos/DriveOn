@@ -142,5 +142,6 @@
     <string name="refreshing_content">Content Refresh</string>
     <string name="select_app">Select an application</string>
     <string name="update">Downloading update…</string>
+    <string name="update_later">Update later…</string>
     <string name="message_new_update">We found a new update! Let\'s download &amp; install the new app…</string>
 </resources>
