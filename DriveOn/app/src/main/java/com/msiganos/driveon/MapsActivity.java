@@ -1,8 +1,7 @@
 package com.msiganos.driveon;
 
 import android.Manifest;
-import android.content.DialogInterface;
-import android.content.Intent;
+import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
@@ -19,7 +18,6 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -31,13 +29,13 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
-import android.widget.LinearLayout;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
@@ -86,8 +84,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final int MIN_MILLISECONDS_BETWEEN_GPS_UPDATES = 100;
     private static final int MIN_METERS_FOR_GPS_UPDATES = 0;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 901;
-    private static final int CALL_PERMISSION_REQUEST_CODE = 801;
-    private static final int SMS_PERMISSION_REQUEST_CODE = 802;
     private GoogleMap gMap;
     private ActivityMapsBinding binding;
     private Marker mPositionMarker;
@@ -125,19 +121,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // Show custom progressbar
                 accelerometerProgressBar.setProgress((int) Math.abs(mAccel));
                 if (Math.abs(mAccel) >= 15) {
-                    // High
-                    if (Math.abs(mAccel) >= 25)
-                        sosDialog();
+                    // High acceleration/deceleration
                     progressDrawable.setColorFilter(BlendModeColorFilterCompat.createBlendModeColorFilterCompat(ResourcesCompat.getColor(getResources(), R.color.red, getTheme()), BlendModeCompat.SRC_IN));
                     Log.i("Sensors", "The accelerator sensor has changed: x: " + x + " y: " + y + " z: " + z + " Absolute Acceleration: " + Math.abs(mAccel));
                 } else if (Math.abs(mAccel) >= 10) {
-                    // Mid
+                    // Mid acceleration/deceleration
                     progressDrawable.setColorFilter(BlendModeColorFilterCompat.createBlendModeColorFilterCompat(ResourcesCompat.getColor(getResources(), R.color.yellow, getTheme()), BlendModeCompat.SRC_IN));
                 } else if (Math.abs(mAccel) >= 5) {
-                    // Small
+                    // Small acceleration/deceleration
                     progressDrawable.setColorFilter(BlendModeColorFilterCompat.createBlendModeColorFilterCompat(ResourcesCompat.getColor(getResources(), R.color.green, getTheme()), BlendModeCompat.SRC_IN));
                 } else {
-                    // Nothing
+                    // No acceleration/deceleration
                     progressDrawable.setColorFilter(BlendModeColorFilterCompat.createBlendModeColorFilterCompat(ResourcesCompat.getColor(getResources(), R.color.gray, getTheme()), BlendModeCompat.SRC_IN));
                 }
                 accelerometerProgressBar.setProgressDrawable(progressDrawable);
@@ -173,159 +167,157 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
     };
-    private int statusBarHeight, navigationBarHeight, trafficSecondsTimer;
-    private Handler timerHandler;
-    private Runnable timerRunnable;
+    private int statusBarHeight, navigationBarHeight, trafficTimer;
     private ArrayList<Double> speedList;
     private boolean accelerometerAvailable, visibleCustomFab, screenOn, uploadData, useCustomMyLocationIndicator;
-    private double HUMAN_SPEED_CONVERTER, currentSpeed, lastSpeed, currentBearing, lastBearing, mAccel, mAccelCurrent, mAccelLast, sumSpeed;
+    private double human_speed_converter, currentSpeed, lastSpeed, currentBearing, lastBearing, mAccel, mAccelCurrent, mAccelLast, sumSpeed;
     private final LocationListener locationListener = new LocationListener() {
         @Override
-        public void onLocationChanged(final Location location) {
+        public void onLocationChanged(@NonNull final Location location) {
             // Get user's current location
             try {
-                if (location == null) {
-                    Log.w("LocationListener", "MapsActivity Location is null");
-                    Toast.makeText(MapsActivity.this, getString(R.string.no_location), Toast.LENGTH_SHORT).show();
+                //if (location == null) {
+                //    Log.w("LocationListener", "MapsActivity Location is null");
+                //    Toast.makeText(MapsActivity.this, getString(R.string.no_location), Toast.LENGTH_SHORT).show();
+                //    return;
+                //}
+                // Get location
+                currentLocation = location;
+                // Get last speed
+                lastSpeed = currentSpeed;
+                // Get current speed | kmhSpeed = 3.6 * speed | mileSpeed = 2.23694 * speed
+                currentSpeed = BigDecimal.valueOf(currentLocation.getSpeed() * human_speed_converter).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                // Get last bearing
+                lastBearing = currentBearing;
+                // Get current bearing
+                currentBearing = currentLocation.getBearing();
+                // View vehicle's speed in KM/H & altitude in M
+                extendedFloatingActionButton.setText(String.format(Locale.getDefault(), "%.2f KM/H | %.2f M", currentSpeed, currentLocation.getAltitude()));
+                // Preparing map camera
+                int zoom = 20;
+                if (currentSpeed >= 50)
+                    zoom = 15;
+                if (gMap != null) {
+                    if (useCustomMyLocationIndicator) {
+                        // Preparing custom myLocation icon
+                        if (mPositionMarker == null) {
+                            Drawable vectorDrawable = ContextCompat.getDrawable(MapsActivity.this, R.drawable.ic_baseline_car_crash_24);
+                            if (vectorDrawable != null) {
+                                vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
+                                vectorDrawable.mutate().setColorFilter(BlendModeColorFilterCompat.createBlendModeColorFilterCompat(ResourcesCompat.getColor(getResources(), R.color.blue_dark, getTheme()), BlendModeCompat.SRC_IN));
+                                Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+                                Canvas canvas = new Canvas(bitmap);
+                                vectorDrawable.draw(canvas);
+                                BitmapDrawable d = new BitmapDrawable(getResources(), Bitmap.createScaledBitmap(bitmap, 150, 300, true));
+                                Bitmap bm = d.getBitmap();
+                                mPositionMarker = gMap.addMarker(new MarkerOptions()
+                                        .title(mUser.getDisplayName())
+                                        .snippet(mSystem.getDevice())
+                                        .flat(true)
+                                        .icon(BitmapDescriptorFactory.fromBitmap(bm))
+                                        .anchor(0.5f, 0.5f)
+                                        .position(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude())));
+                            }
+                        } else
+                            animateMarker(mPositionMarker, currentLocation);
+                    }
+                    // Animate map camera on user's current location
+                    gMap.animateCamera(CameraUpdateFactory.newCameraPosition(
+                            new CameraPosition.Builder()
+                                    .target(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()))
+                                    .zoom(zoom)
+                                    .bearing(currentLocation.getBearing())
+                                    .tilt(80)
+                                    .build()
+                    ));
+                }
+                // Detect traffic
+                if (currentSpeed < 20) {
+                    // Log.i("Traffic", "Traffic detected - Timer: " + trafficTimer + " - Location: " + currentLocation.getLatitude() + ";" + currentLocation.getLongitude() + " - Speed: " + currentLocation.getSpeed());
+                    trafficTimer++;
+                    if (trafficTimer == 1 && trafficStart == null) {
+                        Log.i("Traffic", "First detected traffic - Timer: " + trafficTimer + " - Location: " + currentLocation.getLatitude() + ";" + currentLocation.getLongitude() + " - Speed: " + currentLocation.getSpeed());
+                        trafficStart = currentLocation;
+                    }
                 } else {
-                    // Get location
-                    currentLocation = location;
-                    // Get last speed
-                    lastSpeed = currentSpeed;
-                    // Get current speed | kmhSpeed = 3.6 * speed | mileSpeed = 2.23694 * speed
-                    currentSpeed = BigDecimal.valueOf(currentLocation.getSpeed() * HUMAN_SPEED_CONVERTER).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                    // Get last bearing
-                    lastBearing = currentBearing;
-                    // Get current bearing
-                    currentBearing = currentLocation.getBearing();
-                    // View vehicle's speed in KM/H & altitude in M
-                    extendedFloatingActionButton.setText(String.format(Locale.getDefault(), "%.2f KM/H | %.2f M", currentSpeed, currentLocation.getAltitude()));
-                    // Preparing map camera
-                    int zoom = 20;
-                    if (currentSpeed >= 50)
-                        zoom = 15;
-                    if (gMap != null) {
-                        if (useCustomMyLocationIndicator) {
-                            // Preparing custom myLocation icon
-                            if (mPositionMarker == null) {
-                                Drawable vectorDrawable = ContextCompat.getDrawable(MapsActivity.this, R.drawable.ic_baseline_car_crash_24);
-                                if (vectorDrawable != null) {
-                                    vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
-                                    vectorDrawable.mutate().setColorFilter(BlendModeColorFilterCompat.createBlendModeColorFilterCompat(ResourcesCompat.getColor(getResources(), R.color.blue_dark, getTheme()), BlendModeCompat.SRC_IN));
-                                    Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-                                    Canvas canvas = new Canvas(bitmap);
-                                    vectorDrawable.draw(canvas);
-                                    BitmapDrawable d = new BitmapDrawable(getResources(), Bitmap.createScaledBitmap(bitmap, 150, 300, true));
-                                    Bitmap bm = d.getBitmap();
-                                    mPositionMarker = gMap.addMarker(new MarkerOptions()
-                                            .title(mUser.getDisplayName())
-                                            .snippet(mSystem.getDevice())
-                                            .flat(true)
-                                            .icon(BitmapDescriptorFactory.fromBitmap(bm))
-                                            .anchor(0.5f, 0.5f)
-                                            .position(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude())));
-                                }
-                            } else
-                                animateMarker(mPositionMarker, currentLocation);
-                        }
-                        // Animate map camera on user's current location
-                        gMap.animateCamera(CameraUpdateFactory.newCameraPosition(
-                                new CameraPosition.Builder()
-                                        .target(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()))
-                                        .zoom(zoom)
-                                        .bearing(currentLocation.getBearing())
-                                        .tilt(80)
-                                        .build()
-                        ));
-                    }
-                    // Detect traffic
-                    if (currentSpeed < 20) {
-                        // Log.i("Traffic", "Traffic detected - Timer: " + trafficSecondsTimer + " - Location: " + currentLocation.getLatitude() + ";" + currentLocation.getLongitude() + " - Speed: " + currentLocation.getSpeed());
-                        timerHandler.postDelayed(timerRunnable, 1000);
-                        if (trafficSecondsTimer == 1) {
-                            Log.i("Traffic", "First detected traffic - Timer: " + trafficSecondsTimer + " - Location: " + currentLocation.getLatitude() + ";" + currentLocation.getLongitude() + " - Speed: " + currentLocation.getSpeed());
-                            trafficStart = currentLocation;
-                        }
-                    } else {
-                        // Log.i("Traffic", "No traffic detected - Timer: " + trafficSecondsTimer + " - Location: " + currentLocation.getLatitude() + ";" + currentLocation.getLongitude() + " - Speed: " + currentLocation.getSpeed());
-                        timerHandler.removeCallbacks(timerRunnable);
+                    // Log.i("Traffic", "No traffic detected - Timer: " + trafficTimer + " - Location: " + currentLocation.getLatitude() + ";" + currentLocation.getLongitude() + " - Speed: " + currentLocation.getSpeed());
+                    if (trafficStart != null && trafficEnd == null)
                         trafficEnd = currentLocation;
-                        if (trafficSecondsTimer > 100 && trafficStart != null && trafficEnd != null) {
-                            Log.i("Traffic", "Traffic reported - Timer: " + trafficSecondsTimer + " - LocationStart: " + trafficStart.getLatitude() + ";" + trafficStart.getLongitude() + " - SpeedStart: " + trafficStart.getSpeed() + " - LocationEnd: " + trafficEnd.getLatitude() + ";" + trafficEnd.getLongitude() + " - SpeedEnd: " + trafficEnd.getSpeed());
-                            reportTraffic();
-                        }
-                        trafficStart = null;
-                        trafficEnd = null;
-                        trafficSecondsTimer = 0;
+                    if (trafficTimer > 60 && trafficStart != null && trafficEnd != null) {
+                        Log.i("Traffic", "Traffic reported - Timer: " + trafficTimer + " - LocationStart: " + trafficStart.getLatitude() + ";" + trafficStart.getLongitude() + " - SpeedStart: " + trafficStart.getSpeed() + " - LocationEnd: " + trafficEnd.getLatitude() + ";" + trafficEnd.getLongitude() + " - SpeedEnd: " + trafficEnd.getSpeed());
+                        reportTraffic();
                     }
-                    // Detect sudden speed changes
-                    double acceleration = 0;
-                    double deceleration = 0;
-                    double a = (currentSpeed - lastSpeed) / 10;
-                    double v = BigDecimal.valueOf(a).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                    if (a >= 2.5) {
+                    trafficStart = null;
+                    trafficEnd = null;
+                    trafficTimer = 0;
+                }
+                // Detect sudden speed changes
+                double acceleration = 0;
+                double deceleration = 0;
+                double a = (currentSpeed - lastSpeed) / 10;
+                double v = BigDecimal.valueOf(a).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                if (a >= 2.5) {
+                    // Report acceleration
+                    mSystem.setTimestamp();
+                    acceleration = v;
+                    LocationHelper locationHelper = new LocationHelper(mUser.getUid(), mSystem.getTimestamp(), currentLocation.getLatitude(), currentLocation.getLongitude(), lastSpeed, currentSpeed, acceleration, deceleration, lastBearing, currentBearing, false);
+                    uploadDriversBehaviourData(locationHelper);
+                } else if (a <= -2.5) {
+                    mSystem.setTimestamp();
+                    deceleration = v;
+                    LocationHelper locationHelper = new LocationHelper(mUser.getUid(), mSystem.getTimestamp(), currentLocation.getLatitude(), currentLocation.getLongitude(), lastSpeed, currentSpeed, acceleration, deceleration, lastBearing, currentBearing, false);
+                    uploadDriversBehaviourData(locationHelper);
+                }
+                // Detect sudden bearing changes while car is moving
+                if (currentSpeed > 20) {
+                    if (currentBearing > lastBearing + 90 || currentBearing < lastBearing - 90) {
                         // Report acceleration
                         mSystem.setTimestamp();
-                        acceleration = v;
-                        LocationHelper locationHelper = new LocationHelper(mUser.getUid(), mSystem.getTimestamp(), currentLocation.getLatitude(), currentLocation.getLongitude(), lastSpeed, currentSpeed, acceleration, deceleration, lastBearing, currentBearing, false);
-                        uploadDriversBehaviourData(locationHelper);
-                    } else if (a <= -2.5) {
-                        mSystem.setTimestamp();
-                        deceleration = v;
                         LocationHelper locationHelper = new LocationHelper(mUser.getUid(), mSystem.getTimestamp(), currentLocation.getLatitude(), currentLocation.getLongitude(), lastSpeed, currentSpeed, acceleration, deceleration, lastBearing, currentBearing, false);
                         uploadDriversBehaviourData(locationHelper);
                     }
-                    // Detect sudden bearing changes while car is moving
-                    if (currentSpeed > 20) {
-                        if (currentBearing > lastBearing + 90 || currentBearing < lastBearing - 90) {
+                }
+                // Detect sudden small change of conditions using accelerator
+                if (accelerometerAvailable) {
+                    acceleration = 0;
+                    deceleration = 0;
+                    if (Math.abs(mAccel) >= 15) {
+                        if (currentSpeed > lastSpeed) {
                             // Report acceleration
                             mSystem.setTimestamp();
-                            LocationHelper locationHelper = new LocationHelper(mUser.getUid(), mSystem.getTimestamp(), currentLocation.getLatitude(), currentLocation.getLongitude(), lastSpeed, currentSpeed, acceleration, deceleration, lastBearing, currentBearing, false);
+                            acceleration = BigDecimal.valueOf(currentSpeed - lastSpeed).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                            LocationHelper locationHelper = new LocationHelper(mUser.getUid(), mSystem.getTimestamp(), currentLocation.getLatitude(), currentLocation.getLongitude(), lastSpeed, currentSpeed, acceleration, deceleration, lastBearing, currentBearing, true);
+                            uploadDriversBehaviourData(locationHelper);
+                        } else if (currentSpeed < lastSpeed) {
+                            // Report deceleration
+                            mSystem.setTimestamp();
+                            deceleration = BigDecimal.valueOf(lastSpeed - currentSpeed).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                            LocationHelper locationHelper = new LocationHelper(mUser.getUid(), mSystem.getTimestamp(), currentLocation.getLatitude(), currentLocation.getLongitude(), lastSpeed, currentSpeed, acceleration, deceleration, lastBearing, currentBearing, true);
                             uploadDriversBehaviourData(locationHelper);
                         }
                     }
-                    // Detect sudden small change of conditions using accelerator
-                    if (accelerometerAvailable) {
-                        acceleration = 0;
-                        deceleration = 0;
-                        if (Math.abs(mAccel) >= 15) {
-                            if (currentSpeed > lastSpeed) {
-                                // Report acceleration
-                                mSystem.setTimestamp();
-                                acceleration = BigDecimal.valueOf(currentSpeed - lastSpeed).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                                LocationHelper locationHelper = new LocationHelper(mUser.getUid(), mSystem.getTimestamp(), currentLocation.getLatitude(), currentLocation.getLongitude(), lastSpeed, currentSpeed, acceleration, deceleration, lastBearing, currentBearing, true);
-                                uploadDriversBehaviourData(locationHelper);
-                            } else if (currentSpeed < lastSpeed) {
-                                // Report deceleration
-                                mSystem.setTimestamp();
-                                deceleration = BigDecimal.valueOf(lastSpeed - currentSpeed).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                                LocationHelper locationHelper = new LocationHelper(mUser.getUid(), mSystem.getTimestamp(), currentLocation.getLatitude(), currentLocation.getLongitude(), lastSpeed, currentSpeed, acceleration, deceleration, lastBearing, currentBearing, true);
-                                uploadDriversBehaviourData(locationHelper);
-                            }
-                        }
-                    }
-                    // Calculate average speed
-                    if (currentSpeed > 0)
-                        speedList.add(currentSpeed);
-                    for (int i = 0; i < speedList.size(); i++)
-                        sumSpeed = speedList.get(i) + sumSpeed;
-                    double averageSpeed = BigDecimal.valueOf(sumSpeed / speedList.size()).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                    sumSpeed = 0;
-                    if (uploadData) {
-                        // Update user average speed
-                        mDatabaseReference.child("Users").child(mUser.getUid()).child("averageSpeed").setValue(averageSpeed)
-                                .addOnCompleteListener(MapsActivity.this, new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        if (task.isSuccessful()) {
-                                            Log.i("FirebaseDatabase", "Update user's average speed on database succeed");
-                                        } else {
-                                            Toast.makeText(MapsActivity.this, getString(R.string.database_update_failed) + System.lineSeparator() + Objects.requireNonNull(task.getException()).getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-                                            Log.w("FirebaseDatabase", "Update user's average speed on database failed", task.getException());
-                                        }
+                }
+                // Calculate average speed
+                if (currentSpeed > 0)
+                    speedList.add(currentSpeed);
+                for (int i = 0; i < speedList.size(); i++)
+                    sumSpeed = speedList.get(i) + sumSpeed;
+                double averageSpeed = BigDecimal.valueOf(sumSpeed / speedList.size()).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                sumSpeed = 0;
+                if (uploadData) {
+                    // Update user average speed
+                    mDatabaseReference.child("Users").child(mUser.getUid()).child("averageSpeed").setValue(averageSpeed)
+                            .addOnCompleteListener(MapsActivity.this, new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                        Log.i("FirebaseDatabase", "Update user's average speed on database succeed");
+                                    } else {
+                                        Toast.makeText(MapsActivity.this, getString(R.string.database_update_failed) + System.lineSeparator() + Objects.requireNonNull(task.getException()).getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                                        Log.w("FirebaseDatabase", "Update user's average speed on database failed", task.getException());
                                     }
-                                });
-                    }
+                                }
+                            });
                 }
             } catch (Exception e) {
                 Log.e("Map", "Location listener exception", e);
@@ -371,6 +363,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         locationManager.removeUpdates(locationListener);
         if (accelerometerAvailable)
             sensorManager.unregisterListener(accelerometerSensorEventListener);
+        trafficEnd = currentLocation;
+        if (trafficTimer > 60 && trafficStart != null && trafficEnd != null) {
+            Log.i("Traffic", "Traffic reported - Timer: " + trafficTimer + " - LocationStart: " + trafficStart.getLatitude() + ";" + trafficStart.getLongitude() + " - SpeedStart: " + trafficStart.getSpeed() + " - LocationEnd: " + trafficEnd.getLatitude() + ";" + trafficEnd.getLongitude() + " - SpeedEnd: " + trafficEnd.getSpeed());
+            reportTraffic();
+        }
+        trafficStart = null;
+        trafficEnd = null;
+        trafficTimer = 0;
     }
 
     @Override
@@ -387,26 +387,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         locationManager.removeUpdates(locationListener);
         if (accelerometerAvailable)
             sensorManager.unregisterListener(accelerometerSensorEventListener);
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
         // Report traffic
-        timerHandler.removeCallbacks(timerRunnable);
         trafficEnd = currentLocation;
-        if (trafficSecondsTimer > 100 && trafficStart != null && trafficEnd != null) {
-            Log.i("Traffic", "Traffic reported - Timer: " + trafficSecondsTimer + " - LocationStart: " + trafficStart.getLatitude() + ";" + trafficStart.getLongitude() + " - SpeedStart: " + trafficStart.getSpeed() + " - LocationEnd: " + trafficEnd.getLatitude() + ";" + trafficEnd.getLongitude() + " - SpeedEnd: " + trafficEnd.getSpeed());
+        if (trafficTimer > 60 && trafficStart != null && trafficEnd != null) {
+            Log.i("Traffic", "Traffic reported - Timer: " + trafficTimer + " - LocationStart: " + trafficStart.getLatitude() + ";" + trafficStart.getLongitude() + " - SpeedStart: " + trafficStart.getSpeed() + " - LocationEnd: " + trafficEnd.getLatitude() + ";" + trafficEnd.getLongitude() + " - SpeedEnd: " + trafficEnd.getSpeed());
             reportTraffic();
         }
         trafficStart = null;
         trafficEnd = null;
-        trafficSecondsTimer = 0;
+        trafficTimer = 0;
     }
 
     private void systemInit() {
         // Set SystemHelper
         mSystem = new SystemHelper(this);
+        // Get network condition
+        mSystem.getNetworkConnection();
         // Set LocationManager
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         // Set LocationProviders
@@ -440,16 +436,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mAccelCurrent = SensorManager.GRAVITY_EARTH;
         mAccelLast = SensorManager.GRAVITY_EARTH;
         // Set traffic timer
-        trafficSecondsTimer = 0;
-        timerHandler = new Handler(Looper.getMainLooper());
-        timerRunnable = new Runnable() {
-            @Override
-            public void run() {
-                trafficSecondsTimer++;
-            }
-        };
+        trafficTimer = 0;
         // Set speeds
-        HUMAN_SPEED_CONVERTER = 3.6;  // kmhSpeed = 3.6 * speed | mileSpeed = 2.23694 * speed
+        human_speed_converter = 3.6;  // kmhSpeed = 3.6 * speed | mileSpeed = 2.23694 * speed
         currentSpeed = 0;
         lastSpeed = 0;
         currentBearing = 0;
@@ -682,81 +671,37 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         // Actions after requesting permissions
         try {
-            switch (requestCode) {
-                case LOCATION_PERMISSION_REQUEST_CODE:
-                    // Location Permissions
-                    if (grantResults.length > 0) {
-                        boolean accessFineLocationPermission = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-                        boolean accessCoarseLocationPermission = grantResults[1] == PackageManager.PERMISSION_GRANTED;
-                        if (accessFineLocationPermission && accessCoarseLocationPermission) {
-                            // Location permission already given - Call LocationHelper - Open Map - Update Location
-                            Log.i("Permissions", "Location permissions already granted");
-                            // Call location listener
-                            updateLocation();
-                            // Animate map view on user's last known location
-                            if (gMap != null) {
-                                if (lastKnownLocation != null) {
-                                    gMap.moveCamera(CameraUpdateFactory.newCameraPosition(
-                                            new CameraPosition.Builder()
-                                                    .target(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()))
-                                                    .zoom(20)
-                                                    .bearing(lastKnownLocation.getBearing())
-                                                    .tilt(80)
-                                                    .build()
-                                    ));
-                                }
+            if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+                if (grantResults.length > 0) {
+                    boolean accessFineLocationPermission = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                    boolean accessCoarseLocationPermission = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+                    if (accessFineLocationPermission && accessCoarseLocationPermission) {
+                        // Location permission already given - Call LocationHelper - Open Map - Update Location
+                        Log.i("Permissions", "Location permissions already granted");
+                        // Call location listener
+                        updateLocation();
+                        // Animate map view on user's last known location
+                        if (gMap != null) {
+                            if (lastKnownLocation != null) {
+                                gMap.moveCamera(CameraUpdateFactory.newCameraPosition(
+                                        new CameraPosition.Builder()
+                                                .target(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()))
+                                                .zoom(20)
+                                                .bearing(lastKnownLocation.getBearing())
+                                                .tilt(80)
+                                                .build()
+                                ));
                             }
-                        } else {
-                            // Ask for location permission again - Map unavailable until location permission granted
-                            Log.w("Permissions", "Location permissions not granted again");
-                            mSystem.getPermissions(LOCATION_PERMISSION_REQUEST_CODE);
                         }
                     } else {
-                        // No grantResults for location permissions
-                        Log.w("Permissions", "Location permissions with empty grantResults");
+                        // Ask for location permission again - Map unavailable until location permission granted
+                        Log.w("Permissions", "Location permissions not granted again");
+                        mSystem.getPermissions(LOCATION_PERMISSION_REQUEST_CODE);
                     }
-                    break;
-                case CALL_PERMISSION_REQUEST_CODE:
-                    // Call Permissions
-                    if (grantResults.length > 0) {
-                        boolean callPhonePermission = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-                        boolean callPrivilegedPermission = grantResults[1] == PackageManager.PERMISSION_GRANTED;
-                        if (callPhonePermission && callPrivilegedPermission) {
-                            // Call permission already given - Make call
-                            Log.i("Permissions", "Call permissions already granted");
-                            // Call location listener
-                            callHelp();
-                        } else {
-                            // Ask for call permission again - Call unavailable until call permission granted
-                            Log.w("Permissions", "Call permissions not granted again");
-                            mSystem.getPermissions(CALL_PERMISSION_REQUEST_CODE);
-                        }
-                    } else {
-                        // No grantResults for call permissions
-                        Log.w("Permissions", "Call permissions with empty grantResults");
-                    }
-                    break;
-                case SMS_PERMISSION_REQUEST_CODE:
-                    // SMS Permissions
-                    if (grantResults.length > 0) {
-                        boolean sendSMSPermission = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-                        if (sendSMSPermission) {
-                            // SMS permission already given - Send SmS
-                            Log.i("Permissions", "SMS permissions already granted");
-                            // Send SMS
-                            sendSOSMessage();
-                        } else {
-                            // Ask for SMS permission again - SMS unavailable until SMS permission granted
-                            Log.w("Permissions", "SMS permissions not granted again");
-                            mSystem.getPermissions(SMS_PERMISSION_REQUEST_CODE);
-                        }
-                    } else {
-                        // No grantResults for SMS permissions
-                        Log.w("Permissions", "SMS permissions with empty grantResults");
-                    }
-                    break;
-                default:
-                    Log.w("Permissions", "Unknown permission request code");
+                } else {
+                    // No grantResults for location permissions
+                    Log.w("Permissions", "Location permissions with empty grantResults");
+                }
             }
         } catch (Exception e) {
             // If request is cancelled the result arrays are empty
@@ -764,6 +709,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    @SuppressLint("PotentialBehaviorOverride")
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         gMap = googleMap;
@@ -775,6 +721,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
             gMap.setTrafficEnabled(true);
             gMap.setBuildingsEnabled(true);
+            // Custom map pin text
+            if (gMap != null) {
+                // Setup custom map marker info window
+                gMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+                    @Nullable
+                    @Override
+                    public View getInfoContents(@NonNull Marker marker) {
+                        return null;
+                    }
+
+                    @NonNull
+                    @Override
+                    public View getInfoWindow(@NonNull Marker marker) {
+                        View infoWindow = getLayoutInflater().inflate(R.layout.dialog_map_info, findViewById(R.id.map), false);
+                        TextView title = infoWindow.findViewById(R.id.dialog_map_info_marker_title);
+                        title.setText(marker.getTitle());
+                        TextView snippet = infoWindow.findViewById(R.id.dialog_map_info_marker_snippet);
+                        snippet.setText(marker.getSnippet());
+                        Button button = infoWindow.findViewById(R.id.dialog_map_info_button);
+                        button.setVisibility(View.GONE);
+                        return infoWindow;
+                    }
+                });
+            }
         } catch (Exception e) {
             Log.e("Map", "Can't find map style", e);
         }
@@ -784,6 +754,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             try {
                 Snackbar.make(binding.getRoot(), getString(R.string.my_location_indicator_message), Snackbar.LENGTH_SHORT)
                         .setAction(getString(R.string.change), new View.OnClickListener() {
+                            @SuppressLint("UnsafeIntentLaunch")
                             @Override
                             public void onClick(View view) {
                                 // Change my location indicator & Reload activity
@@ -867,25 +838,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void reportTraffic() {
-        Log.i("Traffic", "Traffic detected - LocationStart: " + trafficStart.getLatitude() + ";" + trafficStart.getLongitude() + " - SpeedStart: " + trafficStart.getSpeed() + " - LocationEnd: " + trafficEnd.getLatitude() + ";" + trafficEnd.getLongitude() + " - SpeedEnd: " + trafficEnd.getSpeed());
+        double trafficDistance = trafficStart.distanceTo(trafficEnd);
+        Log.i("Traffic", "Traffic detected - Traffic distance: " + trafficDistance + "m - LocationStart: " + trafficStart.getLatitude() + ";" + trafficStart.getLongitude() + " - SpeedStart: " + trafficStart.getSpeed() + " - LocationEnd: " + trafficEnd.getLatitude() + ";" + trafficEnd.getLongitude() + " - SpeedEnd: " + trafficEnd.getSpeed());
         if (uploadData) {
-            // Write location data of the current user to the database
-            mSystem.setTimestamp();
-            TrafficHelper trafficHelper = new TrafficHelper(mUser.getUid(), mSystem.getTimestamp(), trafficStart, trafficEnd);
-            try {
-                mDatabaseReference.child("Traffic").child(String.valueOf(trafficHelper.getTimestamp())).setValue(trafficHelper).addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            Log.i("FirebaseDatabase", "Uploading traffic data succeed");
-                        } else {
-                            Toast.makeText(MapsActivity.this, getString(R.string.database_update_failed) + System.lineSeparator() + Objects.requireNonNull(task.getException()).getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-                            Log.w("FirebaseDatabase", "Uploading traffic data failed", task.getException());
+            // Check if traffic start point to traffic end point distance >= 50 m
+            if (trafficDistance >= 30) {
+                // Write location data of the current user to the database
+                mSystem.setTimestamp();
+                TrafficHelper trafficHelper = new TrafficHelper(mUser.getUid(), mSystem.getTimestamp(), trafficStart, trafficEnd);
+                try {
+                    mDatabaseReference.child("Traffic").child(String.valueOf(trafficHelper.getTimestamp())).setValue(trafficHelper).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                Log.i("FirebaseDatabase", "Uploading traffic data succeed");
+                            } else {
+                                Toast.makeText(MapsActivity.this, getString(R.string.database_update_failed) + System.lineSeparator() + Objects.requireNonNull(task.getException()).getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                                Log.w("FirebaseDatabase", "Uploading traffic data failed", task.getException());
+                            }
                         }
-                    }
-                });
-            } catch (Exception e) {
-                Log.e("FirebaseDatabase", "Update user data exception", e);
+                    });
+                } catch (Exception e) {
+                    Log.e("FirebaseDatabase", "Update user data exception", e);
+                }
             }
         }
     }
@@ -913,120 +888,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
         });
-    }
-
-    private void sosDialog() {
-        LinearLayout linearLayout = new LinearLayout(MapsActivity.this);
-        linearLayout.setOrientation(LinearLayout.VERTICAL);
-        ProgressBar progressBar = new ProgressBar(MapsActivity.this,null, android.R.attr.progressBarStyleHorizontal);
-        progressBar.setMax(600);
-        progressBar.setMin(0);
-        progressBar.setProgress(600);
-        progressBar.setKeepScreenOn(true);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        progressBar.setLayoutParams(lp);
-        linearLayout.addView(progressBar);
-        TextView textView = new TextView(MapsActivity.this);
-        textView.setText(getString(R.string.sos_dialog_message));
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        layoutParams.setMargins(50, 50, 50, 50);
-        textView.setLayoutParams(layoutParams);
-        linearLayout.addView(textView);
-        AlertDialog dialog = new AlertDialog.Builder(MapsActivity.this)
-                .setIcon(android.R.drawable.stat_sys_warning)
-                .setTitle(getString(R.string.sos_dialog_title))
-                .setView(linearLayout)
-                .setPositiveButton(getString(R.string.sos_dialog_ok), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                })
-                .setNegativeButton(getString(R.string.sos_dialog_get_help), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                        sendSOSMessage();
-                    }
-                })
-                .create();
-        Handler dialogHandler = new Handler(Looper.myLooper());
-        Runnable dialogRunnable = new Runnable() {
-            public void run() {
-                if (progressBar.getProgress() > 0)
-                    progressBar.incrementProgressBy(-1);
-                else {
-                    dialog.dismiss();
-                    sendSOSMessage();
-                }
-                dialogHandler.postDelayed(this, 100);
-            }
-        };
-        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialogInterface) {
-                updateLocation();
-                dialogHandler.removeCallbacks(dialogRunnable);
-            }
-        });
-        dialog.show();
-        locationManager.removeUpdates(locationListener);
-        dialogHandler.postDelayed(dialogRunnable, 600);
-    }
-
-    private void sendSOSMessage() {
-        callHelp();
-        messageHelp();
-    }
-
-    private void callHelp() {
-        // After checking call permissions Call emergency services
-        try {
-            if (mSystem.getPermissions(CALL_PERMISSION_REQUEST_CODE)) {
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED &&
-                        ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PRIVILEGED) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.CALL_PHONE, Manifest.permission.CALL_PRIVILEGED}, CALL_PERMISSION_REQUEST_CODE);
-                    return;
-                }
-                Uri callUri = Uri.parse("tel://112");
-                Intent callIntent = new Intent(Intent.ACTION_CALL, callUri);
-                callIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
-                startActivity(callIntent);
-                Log.i("SOS", "SOS call made");
-            }
-        } catch (Exception e) {
-            Log.e("Permissions", "Make call - permissions exception", e);
-        }
-    }
-
-    private void messageHelp() {
-        // Send alternative message
-        try {
-            Intent email = new Intent(Intent.ACTION_SEND);
-            email.putExtra(Intent.EXTRA_EMAIL, new String[]{"support@projectjet.gr"});
-            email.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.sos_need_help));
-            email.putExtra(Intent.EXTRA_TEXT, getString(R.string.sos_message));
-            email.setType("message/rfc822");
-            startActivity(Intent.createChooser(email, getString(R.string.sos_dialog_get_help)));
-            Log.i("SOS", "SOS message sent");
-        } catch (Exception e) {
-            Log.e("Permissions", "Send message exception", e);
-        }
-        // After checking sms permissions Send SOS SMS
-        /*try {
-            if (mSystem.getPermissions(SMS_PERMISSION_REQUEST_CODE)) {
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.SEND_SMS}, SMS_PERMISSION_REQUEST_CODE);
-                    return;
-                }
-                SmsManager smsManager = SmsManager.getDefault();
-                smsManager.sendTextMessage("+300000000000", null, getString(R.string.sos_message), null, null);
-                Log.i("SOS", "SOS SMS message sent");
-            }
-        } catch (Exception e) {
-            Log.e("Permissions", "Send SMS - permissions exception", e);
-        }*/
     }
 }

@@ -1,0 +1,29 @@
+<resources>
+    <!-- Material calendar bug correction -->
+    <style name="CorrectMaterialCalendar" parent="@style/ThemeOverlay.MaterialComponents.MaterialCalendar.Fullscreen">
+        <item name="materialCalendarHeaderTitle">@style/DateTitleTextAppearance</item>
+        <item name="materialCalendarHeaderSelection">@style/DateSelectionTextAppearance</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="materialCalendarStyle">@style/CustomMaterialCalendar.Fullscreen</item>
+    </style>
+
+    <style name="CustomMaterialCalendar.Fullscreen" parent="@style/Widget.MaterialComponents.MaterialCalendar.Fullscreen">
+        <item name="android:windowFullscreen">false</item>
+    </style>
+
+    <style name="DateTitleTextAppearance" parent="@style/TextAppearance.AppCompat">
+        <item name="android:layout_marginTop">20dp</item>
+        <item name="android:layout_width">150dp</item>
+        <item name="android:layout_height">50dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">?colorOnSecondary</item>
+    </style>
+
+    <style name="DateSelectionTextAppearance" parent="@style/TextAppearance.AppCompat">
+        <item name="android:layout_marginTop">60dp</item>
+        <item name="android:layout_width">200dp</item>
+        <item name="android:layout_height">100dp</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textColor">?colorOnSecondary</item>
+    </style>
+</resources>

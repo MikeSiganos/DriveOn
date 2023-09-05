@@ -114,7 +114,10 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="2"
+                                android:autoSizeMaxTextSize="16sp"
+                                android:autoSizeTextType="uniform"
                                 android:gravity="center"
+                                android:maxLines="2"
                                 android:text="@string/upload_data_text"
                                 android:textStyle="bold" />
 
@@ -138,7 +141,11 @@
                                 android:layout_height="wrap_content"
                                 android:layout_margin="10dp"
                                 android:layout_weight="2"
+                                android:autoSizeMaxTextSize="14sp"
+                                android:autoSizeTextType="uniform"
+                                android:maxLines="3"
                                 android:onClick="openMainMap"
+                                android:padding="8dp"
                                 android:text="@string/upload_data" />
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
@@ -171,7 +178,10 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="2"
+                                android:autoSizeMaxTextSize="16sp"
+                                android:autoSizeTextType="uniform"
                                 android:gravity="center"
+                                android:maxLines="2"
                                 android:text="@string/download_data_text"
                                 android:textStyle="bold" />
 
@@ -195,7 +205,11 @@
                                 android:layout_height="wrap_content"
                                 android:layout_margin="10dp"
                                 android:layout_weight="2"
+                                android:autoSizeMaxTextSize="14sp"
+                                android:autoSizeTextType="uniform"
+                                android:maxLines="3"
                                 android:onClick="openSecondaryMap"
+                                android:padding="8dp"
                                 android:text="@string/download_data" />
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
@@ -234,7 +248,10 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="2"
+                                android:autoSizeMaxTextSize="16sp"
+                                android:autoSizeTextType="uniform"
                                 android:gravity="center"
+                                android:maxLines="2"
                                 android:text="@string/stats_text"
                                 android:textStyle="bold" />
 
@@ -258,7 +275,11 @@
                                 android:layout_height="wrap_content"
                                 android:layout_margin="10dp"
                                 android:layout_weight="2"
+                                android:autoSizeMaxTextSize="14sp"
+                                android:autoSizeTextType="uniform"
+                                android:maxLines="2"
                                 android:onClick="openUserStats"
+                                android:padding="8dp"
                                 android:text="@string/stats" />
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
@@ -291,7 +312,10 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="2"
+                                android:autoSizeMaxTextSize="16sp"
+                                android:autoSizeTextType="uniform"
                                 android:gravity="center"
+                                android:maxLines="2"
                                 android:text="@string/my_profile_text"
                                 android:textStyle="bold" />
 
@@ -315,7 +339,11 @@
                                 android:layout_height="wrap_content"
                                 android:layout_margin="10dp"
                                 android:layout_weight="2"
+                                android:autoSizeMaxTextSize="14sp"
+                                android:autoSizeTextType="uniform"
+                                android:maxLines="2"
                                 android:onClick="openMyProfile"
+                                android:padding="8dp"
                                 android:text="@string/my_profile" />
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
@@ -354,7 +382,10 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="2"
+                                android:autoSizeMaxTextSize="16sp"
+                                android:autoSizeTextType="uniform"
                                 android:gravity="center"
+                                android:maxLines="2"
                                 android:text="@string/last_login_text"
                                 android:textStyle="bold" />
 
@@ -378,7 +409,11 @@
                                 android:layout_height="wrap_content"
                                 android:layout_margin="10dp"
                                 android:layout_weight="2"
+                                android:autoSizeMaxTextSize="14sp"
+                                android:autoSizeTextType="uniform"
                                 android:clickable="false"
+                                android:maxLines="3"
+                                android:padding="8dp"
                                 android:text="@string/last_login" />
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
@@ -411,7 +446,10 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="2"
+                                android:autoSizeMaxTextSize="16sp"
+                                android:autoSizeTextType="uniform"
                                 android:gravity="center"
+                                android:maxLines="2"
                                 android:text="@string/first_register_text"
                                 android:textStyle="bold" />
 
@@ -435,7 +473,11 @@
                                 android:layout_height="wrap_content"
                                 android:layout_margin="10dp"
                                 android:layout_weight="2"
+                                android:autoSizeMaxTextSize="14sp"
+                                android:autoSizeTextType="uniform"
                                 android:clickable="false"
+                                android:maxLines="3"
+                                android:padding="8dp"
                                 android:text="@string/first_register" />
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>

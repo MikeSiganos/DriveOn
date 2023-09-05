@@ -1,13 +1,13 @@
 <resources>
     <!-- Application data -->
-    <string name="app_name">Drive On</string>
+    <string name="app_name" translatable="false">Drive On</string>
     <!-- Login activity -->
     <string name="login">Login Zone</string>
     <string name="email">Email Address</string>
     <string name="password">Password</string>
     <string name="login_button">Login</string>
     <string name="register_button">Register</string>
-    <string name="login_failed">Login failed We cannot find you in our database</string>
+    <string name="login_failed">Login failed… We cannot find you in our database!</string>
     <!-- Register activity -->
     <string name="name">Name</string>
     <string name="surname">Surname</string>
@@ -16,7 +16,7 @@
     <string name="register">Register Zone</string>
     <string name="password_again">Retype Password</string>
     <string name="agree_terms_checkbox">I have read and agree with the Privacy Statement and the Terms &amp; Conditions of using this app (Required)</string>
-    <string name="registration_failed">Registration failed</string>
+    <string name="registration_failed">Registration failed…</string>
     <string name="weak_password">Weak password\nPassword must be longer than 6 to 10 characters and must contain at least an uppercase letter, a lowercase letter, a number and a symbol (Required)</string>
     <string name="moderate_password">Moderate password\nPassword must be longer than 6 to 10 characters and must contain at least an uppercase letter, a lowercase letter, a number and a symbol (Required)</string>
     <string name="strong_password">Strong password\nPassword is longer than 6 characters and contains at least an uppercase letter, a lowercase letter, a number and a symbol (Required)</string>
@@ -37,19 +37,19 @@
     <string name="password_mismatch">Passwords do not match</string>
     <string name="terms">Read and Accept the Terms &amp; Conditions and the Privacy Statement in order to use the app</string>
     <string name="check_terms">View Terms &amp; Conditions and Privacy Statement</string>
-    <string name="profile_update_failed">Your profile information update failed</string>
-    <string name="database_update_failed">Remote database information update failed</string>
-    <string name="terms_url">https://unipigr-my.sharepoint.com/:f:/g/personal/p18136_unipi_gr/EnpMDrmPKNtKmNNmf21U8kgBrz0PyrdidF1um2MNUVlHgw?e=rJnExz</string>
+    <string name="profile_update_failed">Your profile information update failed…</string>
+    <string name="database_update_failed">Remote database information update failed…</string>
+    <string name="terms_url" translatable="false">https://unipigr-my.sharepoint.com/:f:/g/personal/p18136_unipi_gr/EnpMDrmPKNtKmNNmf21U8kgBrz0PyrdidF1um2MNUVlHgw?e=rJnExz</string>
     <!-- Main activity -->
     <string name="logout_button">Logout</string>
-    <string name="excellent_driver">You are an excellent driver Keep it up</string>
-    <string name="good_driver">You are a good driver But you can do better</string>
-    <string name="moderate_driver">You are an moderate driver You can definitely do better</string>
-    <string name="bad_driver">Your driving skills aren\'t so good Try to improve yourself</string>
+    <string name="excellent_driver">You are an excellent driver…\nKeep it up! 💪🏽</string>
+    <string name="good_driver">You are a good driver…\nBut you can do better! 💪🏽</string>
+    <string name="moderate_driver">You are a moderate driver…\nYou can definitely do better! 💪🏽</string>
+    <string name="bad_driver">Your driving skills aren\'t so good…\nTry to improve yourself! 💪🏽</string>
     <string name="driving_behaviour_status">Driving behaviour status</string>
     <string name="stats_text">My statistics</string>
     <string name="my_profile_text">My profile</string>
-    <string name="upload_data_text">Start monitoring</string>
+    <string name="upload_data_text">Start tracking</string>
     <string name="download_data_text">View data</string>
     <string name="last_login_text">Last login</string>
     <string name="first_register_text">First register</string>
@@ -86,60 +86,61 @@
     <string name="new_password">New Password</string>
     <string name="empty_old_password">Enter your old password</string>
     <string name="empty_new_password">Enter your new password</string>
-    <string name="delete_account_confirm_checkbox">I\'m sure I want to delete my account and my data in this app, I know I cannot access this app immediately after closing my account and I will have to create a new account to use it again</string>
+    <string name="delete_account_confirm_checkbox">I\'m sure I want to delete my account and my data in this app. I know I cannot access this app immediately after closing my account and I will have to create a new account to use it again.</string>
     <string name="save">Save</string>
-    <string name="close_account">Press save button to close your account forever</string>
-    <string name="delete_profile_data_succeed">Your profile data has been successfully deleted</string>
-    <string name="delete_location_data_succeed">Your location data has been successfully deleted</string>
-    <string name="delete_history_data_succeed">Your history app data has been successfully deleted</string>
-    <string name="delete_account_succeed">Your account has been successfully closed</string>
+    <string name="close_account">Press save button to close your account forever…</string>
+    <string name="delete_profile_data_succeed">Your profile data has been successfully deleted!</string>
+    <string name="delete_location_data_succeed">Your location data has been successfully deleted!</string>
+    <string name="delete_history_data_succeed">Your history app data has been successfully deleted!</string>
+    <string name="delete_account_succeed">Your account has been successfully closed!</string>
     <!-- Maps activities -->
-    <string name="title_activity_maps">MapsActivity</string>
-    <string name="title_activity_maps_view">MapsViewActivity</string>
-    <string name="extended_fab_label">Speed &amp; altitude</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_maps_view">Data Map</string>
+    <string name="extended_fab_label">Speed &amp; Altitude</string>
+    <string name="extended_fab_date_label">Select Dates</string>
     <string name="map_options">Map options</string>
-    <string name="my_location_indicator_message">You can use an alternative my location indicator on maps</string>
+    <string name="my_location_indicator_message">You can use an alternative \"My location\" indicator on maps</string>
     <string name="change">Change</string>
     <string name="screen_on">Keep screen on</string>
     <string name="report_incident">Report an incident</string>
+    <string name="user_id">User ID</string>
+    <string name="traffic_start">Traffic start</string>
+    <string name="traffic_end">Traffic end</string>
+    <string name="open_map">Open map</string>
+    <string name="title">Title</string>
+    <string name="description">Description</string>
     <!-- Report incident dialog -->
     <string name="accident">Accident</string>
     <string name="closed_road">Closed road</string>
     <string name="traffic">Traffic</string>
-    <string name="other">Something else</string>
+    <string name="other">Something else…</string>
     <string name="incident_text">Describe what happened</string>
     <string name="report_incident_message">Tell us what\'s wrong</string>
-    <string name="report_incident_note">Note that your location will be used in order to record the exact location of the incident you report</string>
+    <string name="report_incident_note">Note that your location will be used in order to record the exact location of the incident you report!</string>
     <string name="cancel">Cancel</string>
     <string name="clear">Clear</string>
     <string name="report">Report</string>
-    <!-- SOS Dialog -->
-    <string name="sos_dialog_title">Something happened!?</string>
-    <string name="sos_dialog_message">A sudden movement was observed. Please let us know if you\'re good or you need immediate help.\nCaution! If there is no response within a minute, an SOS message will be sent.</string>
-    <string name="sos_dialog_ok">I\'m OK</string>
-    <string name="sos_dialog_get_help">Call for help</string>
-    <string name="sos_need_help">SOS - I need help!</string>
-    <string name="sos_message">I need help! Something happened.\This is an automated message from the DriveOn app. Unusual user space activity has been observed.</string>
     <!-- Information & Error messages -->
     <string name="ok">OK</string>
     <string name="retry">Retry</string>
-    <string name="failed">Process failed Something happened Please try again later</string>
-    <string name="google_services_ok">"Google Play Services OK"</string>
-    <string name="google_services_missing">"Google Play Services Missing"</string>
-    <string name="google_services_update">"Update Google Play Services"</string>
+    <string name="failed">Process failed! Something happened… Please try again later.</string>
+    <string name="google_services_check">Check Google Play Services on your device! Some app features require Google services to function properly…</string>
+    <string name="google_services_ok">Google Play Services OK</string>
+    <string name="google_services_missing">Missing Google Play Services</string>
+    <string name="google_services_update">Update Google Play Services</string>
     <string name="no_network_connection">No network connection</string>
-    <string name="no_network_error">We do not have internet access Check your settings</string>
+    <string name="no_network_error">We do not have internet access… Check your settings!\nSome app features will not be available without an active Internet connection.</string>
     <string name="no_gps_connection">No GPS connection</string>
-    <string name="no_gps_error">We do not have GPS access Check your settings</string>
-    <string name="no_connection">No connection</string>
+    <string name="no_gps_error">We do not have GPS access… Check your settings!\nSome app features will not be available without an active GPS connection.</string>
     <string name="no_data">No data found</string>
-    <string name="no_permissions">Missing user permissions</string>
-    <string name="location_permissions">Allow permission for location access</string>
-    <string name="call_permissions">Allow permission for making emergency calls</string>
-    <string name="sms_permissions">Allow permission for sending emergency messages</string>
-    <string name="no_accelerometer">No acceleration sensor found</string>
-    <string name="no_location">No location found Try again later</string>
-    <string name="settings_intent_error">Cannot open app setting Try open phone settings manually</string>
+    <string name="location_permissions">Allow permission for location access!</string>
+    <string name="no_storage_access">No storage access</string>
+    <string name="storage_permissions">Allow permission for storage access!</string>
+    <string name="no_accelerometer">No acceleration sensor found…</string>
+    <string name="no_location">No location found… Try again later!</string>
+    <string name="settings_intent_error">Cannot open app setting… Try open phone settings manually!</string>
     <string name="refreshing_content">Content Refresh</string>
-    <string name="feature_coming_soon">This feature is coming soon</string>
+    <string name="select_app">Select an application</string>
+    <string name="update">Downloading update…</string>
+    <string name="message_new_update">We found a new update! Let\'s download &amp; install the new app…</string>
 </resources>

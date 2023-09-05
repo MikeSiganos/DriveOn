@@ -52,7 +52,7 @@ public class ReportIncidentDialog extends Dialog {
         super.onCreate(savedInstanceState);
         // Dialog interface
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        Objects.requireNonNull(getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         setContentView(R.layout.dialog_report_incident);
         setCancelable(true);
         // Dialog items

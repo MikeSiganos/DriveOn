@@ -66,6 +66,10 @@
                         android:layout_marginHorizontal="3dp"
                         android:layout_marginVertical="1dp"
                         android:layout_weight="1"
+                        android:autoSizeMaxTextSize="16sp"
+                        android:autoSizeTextType="uniform"
+                        android:maxLines="2"
+                        android:padding="8dp"
                         android:text="@string/update_nickname"
                         tools:ignore="ButtonStyle" />
 
@@ -76,6 +80,10 @@
                         android:layout_marginHorizontal="3dp"
                         android:layout_marginVertical="1dp"
                         android:layout_weight="1"
+                        android:autoSizeMaxTextSize="16sp"
+                        android:autoSizeTextType="uniform"
+                        android:maxLines="2"
+                        android:padding="8dp"
                         android:text="@string/update_photo"
                         tools:ignore="ButtonStyle" />
                 </LinearLayout>
@@ -94,6 +102,10 @@
                         android:layout_marginHorizontal="3dp"
                         android:layout_marginVertical="1dp"
                         android:layout_weight="1"
+                        android:autoSizeMaxTextSize="16sp"
+                        android:autoSizeTextType="uniform"
+                        android:maxLines="2"
+                        android:padding="8dp"
                         android:text="@string/update_mail"
                         tools:ignore="ButtonStyle" />
 
@@ -104,6 +116,10 @@
                         android:layout_marginHorizontal="3dp"
                         android:layout_marginVertical="1dp"
                         android:layout_weight="1"
+                        android:autoSizeMaxTextSize="16sp"
+                        android:autoSizeTextType="uniform"
+                        android:maxLines="2"
+                        android:padding="8dp"
                         android:text="@string/update_password"
                         tools:ignore="ButtonStyle" />
                 </LinearLayout>
@@ -114,8 +130,12 @@
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="13dp"
                     android:layout_marginBottom="20dp"
+                    android:autoSizeMaxTextSize="16sp"
+                    android:autoSizeTextType="uniform"
                     android:backgroundTint="@color/red"
                     android:gravity="center"
+                    android:maxLines="2"
+                    android:padding="8dp"
                     android:text="@string/delete_account"
                     tools:ignore="ButtonStyle" />
 
@@ -318,6 +338,10 @@
                         android:layout_marginHorizontal="3dp"
                         android:layout_marginVertical="1dp"
                         android:layout_weight="1"
+                        android:autoSizeMaxTextSize="16sp"
+                        android:autoSizeTextType="uniform"
+                        android:maxLines="1"
+                        android:padding="8dp"
                         android:text="@string/clear"
                         tools:ignore="ButtonStyle" />
 
@@ -328,6 +352,10 @@
                         android:layout_marginHorizontal="3dp"
                         android:layout_marginVertical="1dp"
                         android:layout_weight="1"
+                        android:autoSizeMaxTextSize="16sp"
+                        android:autoSizeTextType="uniform"
+                        android:maxLines="1"
+                        android:padding="8dp"
                         android:text="@string/save"
                         tools:ignore="ButtonStyle" />
                 </LinearLayout>
@@ -338,7 +366,11 @@
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="13dp"
                     android:layout_marginBottom="20dp"
+                    android:autoSizeMaxTextSize="16sp"
+                    android:autoSizeTextType="uniform"
                     android:gravity="center"
+                    android:maxLines="1"
+                    android:padding="8dp"
                     android:text="@string/cancel"
                     tools:ignore="ButtonStyle" />
             </LinearLayout>

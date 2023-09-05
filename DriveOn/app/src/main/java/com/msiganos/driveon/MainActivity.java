@@ -94,6 +94,8 @@ public class MainActivity extends AppCompatActivity {
     private void systemInit() {
         // Set SystemHelper
         mSystem = new SystemHelper(this);
+        // Get network condition
+        mSystem.getNetworkConnection();
     }
 
     private void firebaseInit() {

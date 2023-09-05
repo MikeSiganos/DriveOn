@@ -1,6 +1,7 @@
 package com.msiganos.driveon;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -19,11 +20,14 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.msiganos.driveon.helpers.SystemHelper;
 
 import java.util.Objects;
 
 public class LoginActivity extends AppCompatActivity {
 
+    private static final int STORAGE_PERMISSION_REQUEST_CODE = 801;
+    private SystemHelper mSystem;
     private FirebaseAuth mAuth;
     private FirebaseUser mUser;
     private TextInputLayout emailTextInputLayout, passwordTextInputLayout;
@@ -34,14 +38,23 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        systemInit();
         firebaseInit();
         layoutInit();
+        // Get network condition & check for updates
+        if (mSystem.getNetworkConnection())
+            mSystem.checkForUpdates();
         // If user is already logged in redirect to main activity
         if (mUser != null) {
             Intent intent = new Intent(this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         }
+    }
+
+    private void systemInit() {
+        // Set SystemHelper
+        mSystem = new SystemHelper(this);
     }
 
     private void firebaseInit() {
@@ -123,5 +136,37 @@ public class LoginActivity extends AppCompatActivity {
         Intent intent = new Intent(this, RegisterActivity.class);
         intent.putExtra("emailFromIntent", emailEditText.getText().toString());
         startActivity(intent);
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        // Actions after requesting permissions
+        try {
+            if (requestCode == STORAGE_PERMISSION_REQUEST_CODE) {
+                if (grantResults.length > 0) {
+                    boolean accessFineLocationPermission = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                    boolean accessCoarseLocationPermission = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+                    if (accessFineLocationPermission && accessCoarseLocationPermission) {
+                        // Storage permission already given - Check for updates
+                        Log.i("Permissions", "Storage permissions already granted");
+                        // Update app
+                        if (mSystem.getNetworkConnection())
+                            mSystem.checkForUpdates();
+                    } else {
+                        // Ask for storage permission again - Update unavailable until location permission granted
+                        Log.w("Permissions", "Storage permissions not granted again");
+                        mSystem.getPermissions(STORAGE_PERMISSION_REQUEST_CODE);
+                    }
+                } else {
+                    // No grantResults for storage permissions
+                    Log.w("Permissions", "Storage permissions with empty grantResults");
+                }
+            }
+        } catch (Exception e) {
+            // If request is cancelled the result arrays are empty
+            Log.e("Permissions", "Permissions exception", e);
+        }
     }
 }

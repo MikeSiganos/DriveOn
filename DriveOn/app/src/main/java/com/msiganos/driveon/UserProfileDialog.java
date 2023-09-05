@@ -73,7 +73,7 @@ public class UserProfileDialog extends Dialog {
         try {
             // Dialog interface
             requestWindowFeature(Window.FEATURE_NO_TITLE);
-            getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            Objects.requireNonNull(getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             setContentView(R.layout.dialog_user_profile);
             setCancelable(true);
             // ImageView

@@ -178,8 +178,12 @@
                         android:id="@+id/cancelIncidentButton"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_margin="3dp"
+                        android:layout_margin="2dp"
                         android:layout_weight="1"
+                        android:autoSizeMaxTextSize="16sp"
+                        android:autoSizeTextType="uniform"
+                        android:maxLines="1"
+                        android:padding="8dp"
                         android:text="@string/cancel"
                         tools:ignore="ButtonStyle" />
 
@@ -187,8 +191,12 @@
                         android:id="@+id/clearIncidentButton"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_margin="3dp"
-                        android:layout_weight="1"
+                        android:layout_margin="2dp"
+                        android:layout_weight="1.2"
+                        android:autoSizeMaxTextSize="16sp"
+                        android:autoSizeTextType="uniform"
+                        android:maxLines="1"
+                        android:padding="8dp"
                         android:text="@string/clear"
                         tools:ignore="ButtonStyle" />
 
@@ -196,8 +204,12 @@
                         android:id="@+id/reportIncidentButton"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_margin="3dp"
+                        android:layout_margin="2dp"
                         android:layout_weight="1"
+                        android:autoSizeMaxTextSize="16sp"
+                        android:autoSizeTextType="uniform"
+                        android:maxLines="1"
+                        android:padding="8dp"
                         android:text="@string/report"
                         tools:ignore="ButtonStyle" />
                 </LinearLayout>

@@ -82,6 +82,7 @@ public class IncidentHelper {
         this.bearing = bearing;
     }
 
+    @SuppressWarnings("SpellCheckingInspection")
     public String getTimestamp() {
         String input = timestamp;
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.getDefault());
@@ -89,6 +90,7 @@ public class IncidentHelper {
         return localDateTime.format(dateTimeFormatter);
     }
 
+    @SuppressWarnings("SpellCheckingInspection")
     public void setTimestamp() {
         DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault());
         Date date = new Date();

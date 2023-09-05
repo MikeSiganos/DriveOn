@@ -33,6 +33,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.msiganos.driveon.helpers.SystemHelper;
 import com.msiganos.driveon.helpers.UserHelper;
 
 import java.util.Objects;
@@ -58,8 +59,16 @@ public class RegisterActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+        systemInit();
         firebaseInit();
         layoutInit();
+    }
+
+    private void systemInit() {
+        // Set SystemHelper
+        SystemHelper mSystem = new SystemHelper(this);
+        // Get network condition
+        mSystem.getNetworkConnection();
     }
 
     private void firebaseInit() {
