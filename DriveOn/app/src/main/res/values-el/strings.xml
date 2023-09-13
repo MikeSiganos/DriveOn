@@ -135,8 +135,6 @@
     <string name="no_gps_error">Δεν έχουμε πρόσβαση GPS… Ελέγξτε τις ρυθμίσεις σας!\nΟρισμένες λειτουργίες της εφαρμογής δεν θα είναι διαθέσιμες χωρίς ενεργή σύνδεση GPS.</string>
     <string name="no_data">Δε βρέθηκαν δεδομένα</string>
     <string name="location_permissions">Επιτρέψτε την άδεια για πρόσβαση στην τοποθεσία!</string>
-    <string name="no_storage_access">Δεν υπάρχει πρόσβαση στον χώρο αποθήκευσης</string>
-    <string name="storage_permissions">Επιτρέψτε την άδεια για πρόσβαση στον χώρο αποθήκευσης!</string>
     <string name="no_accelerometer">Δεν βρέθηκε αισθητήρας επιτάχυνσης…</string>
     <string name="no_location">Δεν βρέθηκε τοποθεσία… Δοκιμάστε ξανά αργότερα!</string>
     <string name="settings_intent_error">Δεν είναι δυνατό το άνοιγμα των ρυθμίσεων της εφαρμογής… Δοκιμάστε να ανοίξετε τις ρυθμίσεις του τηλεφώνου χειροκίνητα!</string>

@@ -134,8 +134,6 @@
     <string name="no_gps_error">We do not have GPS access… Check your settings!\nSome app features will not be available without an active GPS connection.</string>
     <string name="no_data">No data found</string>
     <string name="location_permissions">Allow permission for location access!</string>
-    <string name="no_storage_access">No storage access</string>
-    <string name="storage_permissions">Allow permission for storage access!</string>
     <string name="no_accelerometer">No acceleration sensor found…</string>
     <string name="no_location">No location found… Try again later!</string>
     <string name="settings_intent_error">Cannot open app setting… Try open phone settings manually!</string>

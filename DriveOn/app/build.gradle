@@ -12,8 +12,8 @@ android {
         applicationId "com.msiganos.driveon"
         minSdk 26
         targetSdk 33
-        versionCode 9
-        versionName "1.6"
+        versionCode 23
+        versionName "2.3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

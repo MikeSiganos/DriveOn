@@ -3,11 +3,9 @@ package com.msiganos.driveon.helpers;
 import android.Manifest;
 import android.app.Activity;
 import android.app.DownloadManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
@@ -24,7 +22,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -36,7 +33,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.msiganos.driveon.BuildConfig;
 import com.msiganos.driveon.R;
 
-import java.io.File;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -49,7 +45,6 @@ import javax.net.ssl.HttpsURLConnection;
 public class SystemHelper {
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 901;
-    private static final int STORAGE_PERMISSION_REQUEST_CODE = 801;
     private final Context context;
     private final Activity activity;
     private final LocationManager locationManager;
@@ -57,6 +52,7 @@ public class SystemHelper {
     private String device, timestamp, updateUrl;
     private int currentAppVersionCode = -1;
     private boolean firebaseConnection = false;
+    private boolean internet = false;
 
     public SystemHelper(Activity activity) {
         this.activity = activity;
@@ -138,35 +134,40 @@ public class SystemHelper {
 
     protected boolean getInternetConnection() {
         // Check internet connection
-        final boolean[] internet = {false};
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://clients3.google.com/generate_204").openConnection();
-                    urlConnection.setRequestProperty("User-Agent", "Android");
-                    urlConnection.setRequestProperty("Connection", "close");
-                    urlConnection.setConnectTimeout(5000);
-                    urlConnection.connect();
-                    internet[0] = urlConnection.getResponseCode() == 204 && urlConnection.getContentLength() == 0;
-                    Log.i("Network", "The device is connected to the internet");
-                    // Check for updates
-                    checkForUpdates();
-                    // Check firebase realtime database connection
-                    getFirebaseConnection();
-                    if (firebaseConnection)
-                        Log.i("FirebaseDatabase", "There is an active access to the firebase database");
-                    else
-                        Log.w("FirebaseDatabase", "There is not an active access to the firebase database");
-                } catch (Exception e) {
-                    showNoConnectionAlertDialog();
-                    Log.w("Network", "The device is not connected to the internet");
-                    Log.e("Network", "Network exception " + e);
-                    e.printStackTrace();
+        internet = false;
+        try {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://clients3.google.com/generate_204").openConnection();
+                        urlConnection.setRequestProperty("User-Agent", "Android");
+                        urlConnection.setRequestProperty("Connection", "close");
+                        urlConnection.setConnectTimeout(5000);
+                        urlConnection.connect();
+                        internet = urlConnection.getResponseCode() == 204 && urlConnection.getContentLength() == 0;
+                        Log.i("Network", "The device is connected to the internet");
+                        // Check for updates
+                        checkForUpdates();
+                        // Check firebase realtime database connection
+                        getFirebaseConnection();
+                        if (firebaseConnection)
+                            Log.i("FirebaseDatabase", "There is an active access to the firebase database");
+                        else
+                            Log.w("FirebaseDatabase", "There is not an active access to the firebase database");
+                    } catch (Exception e) {
+                        showNoConnectionAlertDialog();
+                        Log.w("Network", "The device is not connected to the internet");
+                        Log.e("Network", "Network exception ", e);
+                    }
                 }
-            }
-        }).start();
-        return internet[0];
+            }).start();
+        } catch (Exception e) {
+            showNoConnectionAlertDialog();
+            Log.w("Network", "The device is not connected to the internet");
+            Log.e("Network", "Network exception ", e);
+        }
+        return internet;
     }
 
     protected void showNoConnectionAlertDialog() {
@@ -325,23 +326,8 @@ public class SystemHelper {
                         }
                     }
                     break;
-                case STORAGE_PERMISSION_REQUEST_CODE:
-                    if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
-                            ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                        // Permissions granted
-                        Log.i("Permissions", "Storage permissions granted");
-                        permissionGranted = true;
-                    } else if (ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.READ_EXTERNAL_STORAGE) &&
-                            ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                        // Permissions not granted but explain user
-                        Log.w("Permissions", "Storage permissions still not granted");
-                        showPermissionsAlertDialog(context.getString(R.string.no_storage_access), context.getString(R.string.storage_permissions), STORAGE_PERMISSION_REQUEST_CODE);
-                    } else {
-                        // Ask for storage permissions
-                        Log.w("Permissions", "Storage permissions not granted");
-                        ActivityCompat.requestPermissions(activity,
-                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_PERMISSION_REQUEST_CODE);
-                    }
+                case -1:
+                    Log.d("Permissions", "Permission request code -1: Other permission option");
                     break;
                 default:
                     Log.w("Permissions", "Unknown permission request code");
@@ -397,7 +383,7 @@ public class SystemHelper {
             int appVersionCode = BuildConfig.VERSION_CODE;
             String appVersionName = BuildConfig.VERSION_NAME;
             // Read user records from firebase
-            mDatabaseReference.child("Application").addValueEventListener(new ValueEventListener() {
+            mDatabaseReference.child("Application").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     // Get update data from firebase
@@ -406,7 +392,7 @@ public class SystemHelper {
                     Log.i("Update", appVersionName + ": v" + appVersionCode + " --> v" + currentAppVersionCode + " --> " + updateUrl);
                     if (currentAppVersionCode > appVersionCode) {
                         // Download & Install update
-                        // Toast.makeText(context.getApplicationContext(), context.getString(R.string.message_new_update), Toast.LENGTH_SHORT).show();
+                        // Toast.makeText(context, context.getString(R.string.message_new_update), Toast.LENGTH_SHORT).show();
                         Log.i("Update", "We found some updates! Let's download & install the new app...");
                         AlertDialog.Builder builder = new AlertDialog.Builder(activity)
                                 .setTitle("\uD83C\uDD95 " + context.getString(R.string.app_name))
@@ -433,7 +419,7 @@ public class SystemHelper {
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
-                    Toast.makeText(context.getApplicationContext(), context.getString(R.string.failed) + System.lineSeparator() + error.toException().getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, context.getString(R.string.failed) + System.lineSeparator() + error.toException().getLocalizedMessage(), Toast.LENGTH_SHORT).show();
                     Log.e("Update", error.toException().toString());
                 }
             });
@@ -443,75 +429,24 @@ public class SystemHelper {
     }
 
     protected void updateApp(String updateUrl) {
-        if (getPermissions(STORAGE_PERMISSION_REQUEST_CODE)) {
-            // Update file path
-            try {
-                String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).toString();
-                String fileName = "DriveOn.apk";
-                File file_path = new File(path, "DriveOn");
-                if (!file_path.exists()) {
-                    boolean r = file_path.mkdir();
-                    if (!r)
-                        Log.e("Update", "Failed to create directory " + file_path);
-                }
-                File update_file_path = new File(file_path, "Updater");
-                if (!update_file_path.exists()) {
-                    boolean r = update_file_path.mkdir();
-                    if (!r)
-                        Log.e("Update", "Failed to create directory " + update_file_path);
-                }
-                File update_file = new File(update_file_path, fileName);
-                final Uri uri = Uri.parse("file://" + update_file);
-                // Delete update file if exists
-                if (update_file.exists()) {
-                    boolean r = update_file.delete();
-                    if (!r)
-                        Log.e("Update", "Failed to delete the older file " + update_file);
-                }
-                // Set DownloadManager
-                DownloadManager.Request request = new DownloadManager.Request(Uri.parse(updateUrl));
-                request.setTitle(context.getString(R.string.app_name));
-                request.setDescription(context.getString(R.string.update));
-                // Set notification visibility
-                request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                // Set destination
-                request.setDestinationUri(uri);
-                // Get download service and enqueue file
-                final DownloadManager manager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
-                final long downloadId = manager.enqueue(request);
-                // Set BroadcastReceiver to install app when .apk is downloaded
-                BroadcastReceiver onComplete = new BroadcastReceiver() {
-                    public void onReceive(Context context, Intent intent) {
-                        long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-                        if (downloadId == id) {
-                            Log.i("Update", "Update downloaded successfully");
-                            Toast.makeText(context, "Download Completed", Toast.LENGTH_SHORT).show();
-                            try {
-                                // Uri updateUri = manager.getUriForDownloadedFile(downloadId);
-                                Uri updateUri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".provider", update_file);
-                                Intent installIntent = new Intent();
-                                installIntent.setDataAndType(updateUri, "application/vnd.android.package-archive");
-                                installIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                activity.startActivity(installIntent);
-                                context.getApplicationContext().unregisterReceiver(this);
-                                activity.finish();
-                            } catch (Exception e) {
-                                Log.e("Update", "Update exception ", e);
-                                Toast.makeText(context, context.getString(R.string.failed), Toast.LENGTH_SHORT).show();
-                            }
-                        } else {
-                            Log.w("Update", "Update failed");
-                            Toast.makeText(context, context.getString(R.string.failed), Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                };
-                // Register receiver for when .apk download is compete
-                ContextCompat.registerReceiver(context.getApplicationContext(), onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), ContextCompat.RECEIVER_EXPORTED);
-            } catch (Exception e) {
-                Log.e("Update", "Update exception ", e);
-                Toast.makeText(context, context.getString(R.string.failed), Toast.LENGTH_SHORT).show();
-            }
+        try {
+            // Set DownloadManager
+            DownloadManager.Request request = new DownloadManager.Request(Uri.parse(updateUrl));
+            request.setTitle(context.getString(R.string.app_name));
+            request.setDescription(context.getString(R.string.update));
+            // Set notification visibility
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            // Set file type
+            request.setMimeType("application/vnd.android.package-archive");
+            // Set destination
+            //request.setDestinationUri(uri);
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "DriveOn.apk");
+            // Get download service and enqueue file
+            final DownloadManager manager = (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);  // context.
+            manager.enqueue(request);
+        } catch (Exception e) {
+            Log.e("Update", "Update exception ", e);
+            Toast.makeText(context, context.getString(R.string.failed), Toast.LENGTH_SHORT).show();
         }
     }
 }

@@ -544,7 +544,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             getTheme().resolveAttribute(androidx.appcompat.R.attr.colorPrimary, typedValue, true);
             int primaryColor = typedValue.data;
             // Set screen on FAB and save settings
-            screenOn = sharedPreferences.getBoolean("mainMapScreenOn", false);
+            screenOn = sharedPreferences.getBoolean("mainMapScreenOn", true);
             if (screenOn) {
                 screenOnFab.setBackgroundTintList(ColorStateList.valueOf(primaryColor));
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
