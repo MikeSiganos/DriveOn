@@ -63,7 +63,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Locale;
@@ -118,7 +118,7 @@ public class MapsViewActivity extends FragmentActivity implements OnMapReadyCall
         String stampFormat = "yyyyMMddHHmmss";
         timestampFormat = new SimpleDateFormat(stampFormat, Locale.getDefault());
         dateTimeFormatter = DateTimeFormatter.ofPattern(stampFormat, Locale.getDefault());
-        dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.getDefault());
+        dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm", Locale.getDefault());
         // Date filter
         fromDate = new Date();
         toDate = fromDate;
@@ -392,11 +392,11 @@ public class MapsViewActivity extends FragmentActivity implements OnMapReadyCall
                         IncidentHelper incidentHelper = reportsDataSnapshot.getValue(IncidentHelper.class);
                         if (incidentHelper != null) {
                             // Found data
-                            LocalDate date = LocalDate.parse(incidentHelper.getTimestamp(), dateTimeFormatter);
+                            LocalDateTime date = LocalDateTime.parse(incidentHelper.getTimestamp(), dateTimeFormatter);
                             if (gMap != null) {
                                 LatLng latLng = new LatLng(incidentHelper.getLatitude(), incidentHelper.getLongitude());
                                 BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW);
-                                String title = getString(R.string.accident) + " (" + dateFormatter.format(date) + ")";
+                                String title = getString(R.string.accident) + "\n" + dateFormatter.format(date);
                                 String snippet = incidentHelper.getIncident() + System.lineSeparator() + getString(R.string.user_id) + ": " + incidentHelper.getUid();
                                 MarkerClusterItemHelper incidentsAccidentsClusterItem = new MarkerClusterItemHelper(latLng, bitmapDescriptor, title, snippet, Color.YELLOW, incidentHelper);
                                 incidentsAccidentsClusterManager.addItem(incidentsAccidentsClusterItem);
@@ -431,11 +431,11 @@ public class MapsViewActivity extends FragmentActivity implements OnMapReadyCall
                         IncidentHelper incidentHelper = reportsDataSnapshot.getValue(IncidentHelper.class);
                         if (incidentHelper != null) {
                             // Found data
-                            LocalDate date = LocalDate.parse(incidentHelper.getTimestamp(), dateTimeFormatter);
+                            LocalDateTime date = LocalDateTime.parse(incidentHelper.getTimestamp(), dateTimeFormatter);
                             if (gMap != null) {
                                 LatLng latLng = new LatLng(incidentHelper.getLatitude(), incidentHelper.getLongitude());
                                 BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED);
-                                String title = getString(R.string.closed_road) + " (" + dateFormatter.format(date) + ")";
+                                String title = getString(R.string.closed_road) + "\n" + dateFormatter.format(date);
                                 String snippet = incidentHelper.getIncident() + System.lineSeparator() + getString(R.string.user_id) + ": " + incidentHelper.getUid();
                                 MarkerClusterItemHelper incidentsClosedRoadsClusterItem = new MarkerClusterItemHelper(latLng, bitmapDescriptor, title, snippet, Color.RED, incidentHelper);
                                 incidentsClosedRoadsClusterManager.addItem(incidentsClosedRoadsClusterItem);
@@ -470,11 +470,11 @@ public class MapsViewActivity extends FragmentActivity implements OnMapReadyCall
                         IncidentHelper incidentHelper = reportsDataSnapshot.getValue(IncidentHelper.class);
                         if (incidentHelper != null) {
                             // Found data
-                            LocalDate date = LocalDate.parse(incidentHelper.getTimestamp(), dateTimeFormatter);
+                            LocalDateTime date = LocalDateTime.parse(incidentHelper.getTimestamp(), dateTimeFormatter);
                             if (gMap != null) {
                                 LatLng latLng = new LatLng(incidentHelper.getLatitude(), incidentHelper.getLongitude());
                                 BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
-                                String title = getString(R.string.traffic) + " (" + dateFormatter.format(date) + ")";
+                                String title = getString(R.string.traffic) + "\n" + dateFormatter.format(date);
                                 String snippet = incidentHelper.getIncident() + System.lineSeparator() + getString(R.string.user_id) + ": " + incidentHelper.getUid();
                                 MarkerClusterItemHelper incidentsTrafficClusterItem = new MarkerClusterItemHelper(latLng, bitmapDescriptor, title, snippet, Color.GREEN, incidentHelper);
                                 incidentsTrafficClusterManager.addItem(incidentsTrafficClusterItem);
@@ -509,11 +509,11 @@ public class MapsViewActivity extends FragmentActivity implements OnMapReadyCall
                         IncidentHelper incidentHelper = reportsDataSnapshot.getValue(IncidentHelper.class);
                         if (incidentHelper != null) {
                             // Found data
-                            LocalDate date = LocalDate.parse(incidentHelper.getTimestamp(), dateTimeFormatter);
+                            LocalDateTime date = LocalDateTime.parse(incidentHelper.getTimestamp(), dateTimeFormatter);
                             if (gMap != null) {
                                 LatLng latLng = new LatLng(incidentHelper.getLatitude(), incidentHelper.getLongitude());
                                 BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE);
-                                String title = getString(R.string.other) + " (" + dateFormatter.format(date) + ")";
+                                String title = getString(R.string.other) + "\n" + dateFormatter.format(date);
                                 String snippet = incidentHelper.getIncident() + System.lineSeparator() + getString(R.string.user_id) + ": " + incidentHelper.getUid();
                                 MarkerClusterItemHelper incidentsOtherClusterItem = new MarkerClusterItemHelper(latLng, bitmapDescriptor, title, snippet, Color.BLUE, incidentHelper);
                                 incidentsOtherClusterManager.addItem(incidentsOtherClusterItem);
@@ -573,15 +573,15 @@ public class MapsViewActivity extends FragmentActivity implements OnMapReadyCall
                         TrafficHelper trafficHelper = trafficDataSnapshot.getValue(TrafficHelper.class);
                         if (trafficHelper != null) {
                             // Found data
-                            LocalDate date = LocalDate.parse(trafficHelper.getTimestamp(), dateTimeFormatter);
+                            LocalDateTime date = LocalDateTime.parse(trafficHelper.getTimestamp(), dateTimeFormatter);
                             if (gMap != null) {
                                 LatLng latLngStart = new LatLng(trafficHelper.getLatitudeStart(), trafficHelper.getLongitudeStart());
                                 LatLng latLngEnd = new LatLng(trafficHelper.getLatitudeEnd(), trafficHelper.getLongitudeEnd());
                                 BitmapDescriptor bitmapStartDescriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED);
                                 BitmapDescriptor bitmapEndDescriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
-                                String titleStart = getString(R.string.traffic_start) + " (" + dateFormatter.format(date) + ")";
+                                String titleStart = getString(R.string.traffic_start) + "\n" + dateFormatter.format(date);
                                 String snippetStart = getString(R.string.traffic_start) + ": " + BigDecimal.valueOf(trafficHelper.getSpeedStart()).setScale(2, RoundingMode.HALF_UP).doubleValue() + "KM/H" + System.lineSeparator() + getString(R.string.user_id) + ": " + trafficHelper.getUid();
-                                String titleEnd = getString(R.string.traffic_end) + " (" + dateFormatter.format(date) + ")";
+                                String titleEnd = getString(R.string.traffic_end) + "\n" + dateFormatter.format(date);
                                 String snippetEnd = getString(R.string.traffic_end) + ": " + BigDecimal.valueOf(trafficHelper.getSpeedEnd()).setScale(2, RoundingMode.HALF_UP).doubleValue() + "KM/H" + System.lineSeparator() + getString(R.string.user_id) + ": " + trafficHelper.getUid();
                                 MarkerClusterItemHelper trafficStartClusterItem = new MarkerClusterItemHelper(latLngStart, bitmapStartDescriptor, titleStart, snippetStart, Color.RED, trafficHelper);
                                 trafficStartClusterManager.addItem(trafficStartClusterItem);
@@ -648,11 +648,11 @@ public class MapsViewActivity extends FragmentActivity implements OnMapReadyCall
                                     if (locationHelper != null) {
                                         // Found data
                                         if (locationHelper.getAcceleration() != 0) {
-                                            LocalDate date = LocalDate.parse(locationHelper.getTimestamp(), dateTimeFormatter);
+                                            LocalDateTime date = LocalDateTime.parse(locationHelper.getTimestamp(), dateTimeFormatter);
                                             if (gMap != null) {
                                                 LatLng latLng = new LatLng(locationHelper.getLatitude(), locationHelper.getLongitude());
                                                 BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
-                                                String title = getString(R.string.accelerations) + " (" + dateFormatter.format(date) + ")";
+                                                String title = getString(R.string.accelerations) + "\n" + dateFormatter.format(date);
                                                 String snippet = getString(R.string.accelerations) + ": " + BigDecimal.valueOf(locationHelper.getLastSpeed()).setScale(2, RoundingMode.HALF_UP).doubleValue() + "KM/H --> " + BigDecimal.valueOf(locationHelper.getSpeed()).setScale(2, RoundingMode.HALF_UP).doubleValue() + "KM/H" + System.lineSeparator() + getString(R.string.user_id) + ": " + locationHelper.getUid();
                                                 MarkerClusterItemHelper accelerationClusterItem = new MarkerClusterItemHelper(latLng, bitmapDescriptor, title, snippet, Color.GREEN, locationHelper);
                                                 accelerationsClusterManager.addItem(accelerationClusterItem);
@@ -721,11 +721,11 @@ public class MapsViewActivity extends FragmentActivity implements OnMapReadyCall
                                     if (locationHelper != null) {
                                         // Found data
                                         if (locationHelper.getDeceleration() != 0) {
-                                            LocalDate date = LocalDate.parse(locationHelper.getTimestamp(), dateTimeFormatter);
+                                            LocalDateTime date = LocalDateTime.parse(locationHelper.getTimestamp(), dateTimeFormatter);
                                             if (gMap != null) {
                                                 LatLng latLng = new LatLng(locationHelper.getLatitude(), locationHelper.getLongitude());
                                                 BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED);
-                                                String title = getString(R.string.decelerations) + " (" + dateFormatter.format(date) + ")";
+                                                String title = getString(R.string.decelerations) + "\n" + dateFormatter.format(date);
                                                 String snippet = getString(R.string.decelerations) + ": " + BigDecimal.valueOf(locationHelper.getLastSpeed()).setScale(2, RoundingMode.HALF_UP).doubleValue() + "KM/H --> " + BigDecimal.valueOf(locationHelper.getSpeed()).setScale(2, RoundingMode.HALF_UP).doubleValue() + "KM/H" + System.lineSeparator() + getString(R.string.user_id) + ": " + locationHelper.getUid();
                                                 MarkerClusterItemHelper decelerationClusterItem = new MarkerClusterItemHelper(latLng, bitmapDescriptor, title, snippet, Color.RED, locationHelper);
                                                 decelerationsClusterManager.addItem(decelerationClusterItem);

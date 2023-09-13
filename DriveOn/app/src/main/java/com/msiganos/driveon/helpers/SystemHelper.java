@@ -24,6 +24,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -413,6 +414,7 @@ public class SystemHelper {
                                 .setPositiveButton(context.getString(R.string.ok), new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
+                                        dialogInterface.dismiss();
                                         updateApp(updateUrl);
                                     }
                                 })
@@ -436,61 +438,80 @@ public class SystemHelper {
                 }
             });
         } catch (Exception e) {
-            Log.e("Update", e.toString());
+            Log.e("Update", "Update exception", e);
         }
     }
 
     protected void updateApp(String updateUrl) {
         if (getPermissions(STORAGE_PERMISSION_REQUEST_CODE)) {
             // Update file path
-            String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).toString();
-            String fileName = context.getString(R.string.app_name) + ".apk";
-            File update_file_path = new File(path, context.getString(R.string.app_name));
-            if (!update_file_path.exists()) {
-                boolean r = update_file_path.mkdir();
-                if (!r)
-                    Log.e("Update", "Failed to create directory " + update_file_path);
-            }
-            File update_file = new File(update_file_path, fileName);
-            final Uri uri = Uri.parse("file://" + update_file);
-            // Delete update file if exists
-            if (update_file.exists()) {
-                boolean r = update_file.delete();
-                if (!r)
-                    Log.e("Update", "Failed to delete the older file " + update_file);
-            }
-            // Set DownloadManager
-            DownloadManager.Request request = new DownloadManager.Request(Uri.parse(updateUrl));
-            request.setTitle(context.getString(R.string.app_name));
-            request.setDescription(context.getString(R.string.update));
-            // Set notification visibility
-            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-            // Set destination
-            request.setDestinationUri(uri);
-            // Get download service and enqueue file
-            final DownloadManager manager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
-            final long downloadId = manager.enqueue(request);
-            // Set BroadcastReceiver to install app when .apk is downloaded
-            BroadcastReceiver onComplete = new BroadcastReceiver() {
-                public void onReceive(Context context, Intent intent) {
-                    /*try {
-                        Intent updateIntent = new Intent(Intent.ACTION_VIEW);
-                        updateIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        updateIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                        Uri apkURI = FileProvider.getUriForFile(context.getApplicationContext(), context.getApplicationContext().getPackageName() + ".provider", update_file);
-                        updateIntent.setDataAndType(apkURI, manager.getMimeTypeForDownloadedFile(downloadId));
-                        activity.startActivity(updateIntent);
-                        context.getApplicationContext().unregisterReceiver(this);
-                        activity.finish();
-                    } catch (ActivityNotFoundException e) {
-                        Log.e("UpdateIntent", "Start update intent exception", e);
-                        Toast.makeText(context, context.getString(R.string.failed), Toast.LENGTH_SHORT).show();
-                    }*/
-                    Log.i("Update", "Update downloaded successfully");
+            try {
+                String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).toString();
+                String fileName = "DriveOn.apk";
+                File file_path = new File(path, "DriveOn");
+                if (!file_path.exists()) {
+                    boolean r = file_path.mkdir();
+                    if (!r)
+                        Log.e("Update", "Failed to create directory " + file_path);
                 }
-            };
-            // Register receiver for when .apk download is compete
-            ContextCompat.registerReceiver(context.getApplicationContext(), onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), ContextCompat.RECEIVER_EXPORTED);
+                File update_file_path = new File(file_path, "Updater");
+                if (!update_file_path.exists()) {
+                    boolean r = update_file_path.mkdir();
+                    if (!r)
+                        Log.e("Update", "Failed to create directory " + update_file_path);
+                }
+                File update_file = new File(update_file_path, fileName);
+                final Uri uri = Uri.parse("file://" + update_file);
+                // Delete update file if exists
+                if (update_file.exists()) {
+                    boolean r = update_file.delete();
+                    if (!r)
+                        Log.e("Update", "Failed to delete the older file " + update_file);
+                }
+                // Set DownloadManager
+                DownloadManager.Request request = new DownloadManager.Request(Uri.parse(updateUrl));
+                request.setTitle(context.getString(R.string.app_name));
+                request.setDescription(context.getString(R.string.update));
+                // Set notification visibility
+                request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                // Set destination
+                request.setDestinationUri(uri);
+                // Get download service and enqueue file
+                final DownloadManager manager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+                final long downloadId = manager.enqueue(request);
+                // Set BroadcastReceiver to install app when .apk is downloaded
+                BroadcastReceiver onComplete = new BroadcastReceiver() {
+                    public void onReceive(Context context, Intent intent) {
+                        long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+                        if (downloadId == id) {
+                            Log.i("Update", "Update downloaded successfully");
+                            Toast.makeText(context, "Download Completed", Toast.LENGTH_SHORT).show();
+                            try {
+                                // Uri updateUri = manager.getUriForDownloadedFile(downloadId);
+                                Uri updateUri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".provider", update_file);
+                                Intent installIntent = new Intent();
+                                installIntent.setDataAndType(updateUri, "application/vnd.android.package-archive");
+                                installIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                activity.startActivity(installIntent);
+                                context.getApplicationContext().unregisterReceiver(this);
+                                activity.finish();
+                            } catch (Exception e) {
+                                Log.e("Update", "Update exception ", e);
+                                Toast.makeText(context, context.getString(R.string.failed), Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Log.w("Update", "Update failed");
+                            Toast.makeText(context, context.getString(R.string.failed), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                };
+                // Register receiver for when .apk download is compete
+                ContextCompat.registerReceiver(context.getApplicationContext(), onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), ContextCompat.RECEIVER_EXPORTED);
+            } catch (Exception e) {
+                Log.e("Update", "Update exception ", e);
+                Toast.makeText(context, context.getString(R.string.failed), Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

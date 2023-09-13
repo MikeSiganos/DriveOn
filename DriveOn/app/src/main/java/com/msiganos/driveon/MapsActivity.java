@@ -256,13 +256,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 double deceleration = 0;
                 double a = (currentSpeed - lastSpeed) / 10;
                 double v = BigDecimal.valueOf(a).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                if (a >= 2.5) {
+                if (a >= 2) {
                     // Report acceleration
                     mSystem.setTimestamp();
                     acceleration = v;
                     LocationHelper locationHelper = new LocationHelper(mUser.getUid(), mSystem.getTimestamp(), currentLocation.getLatitude(), currentLocation.getLongitude(), lastSpeed, currentSpeed, acceleration, deceleration, lastBearing, currentBearing, false);
                     uploadDriversBehaviourData(locationHelper);
-                } else if (a <= -2.5) {
+                } else if (a <= -2) {
                     mSystem.setTimestamp();
                     deceleration = v;
                     LocationHelper locationHelper = new LocationHelper(mUser.getUid(), mSystem.getTimestamp(), currentLocation.getLatitude(), currentLocation.getLongitude(), lastSpeed, currentSpeed, acceleration, deceleration, lastBearing, currentBearing, false);
@@ -270,7 +270,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
                 // Detect sudden bearing changes while car is moving
                 if (currentSpeed > 20) {
-                    if (currentBearing > lastBearing + 90 || currentBearing < lastBearing - 90) {
+                    if (currentBearing > lastBearing + 45 || currentBearing < lastBearing - 45) {
                         // Report acceleration
                         mSystem.setTimestamp();
                         LocationHelper locationHelper = new LocationHelper(mUser.getUid(), mSystem.getTimestamp(), currentLocation.getLatitude(), currentLocation.getLongitude(), lastSpeed, currentSpeed, acceleration, deceleration, lastBearing, currentBearing, false);
