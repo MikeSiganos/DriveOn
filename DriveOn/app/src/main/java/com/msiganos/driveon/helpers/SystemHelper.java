@@ -49,7 +49,7 @@ public class SystemHelper {
     private final Activity activity;
     private final LocationManager locationManager;
     private DatabaseReference mDatabaseReference;
-    private String device, timestamp, updateUrl;
+    private String device, timestamp, updateUrl, currentAppVersionName, news;
     private int currentAppVersionCode = -1;
     private boolean firebaseConnection = false;
     private boolean internet = false;
@@ -389,14 +389,16 @@ public class SystemHelper {
                     // Get update data from firebase
                     currentAppVersionCode = Integer.parseInt(Objects.requireNonNull(dataSnapshot.child("version").getValue()).toString());
                     updateUrl = Objects.requireNonNull(dataSnapshot.child("update").getValue()).toString();
-                    Log.i("Update", appVersionName + ": v" + appVersionCode + " --> v" + currentAppVersionCode + " --> " + updateUrl);
+                    currentAppVersionName = Objects.requireNonNull(dataSnapshot.child("number").getValue()).toString();
+                    news = Objects.requireNonNull(dataSnapshot.child("news").getValue()).toString();
+                    Log.i("Update", "v" + appVersionName + " --> v" + currentAppVersionName);
                     if (currentAppVersionCode > appVersionCode) {
                         // Download & Install update
                         // Toast.makeText(context, context.getString(R.string.message_new_update), Toast.LENGTH_SHORT).show();
                         Log.i("Update", "We found some updates! Let's download & install the new app...");
                         AlertDialog.Builder builder = new AlertDialog.Builder(activity)
                                 .setTitle("\uD83C\uDD95 " + context.getString(R.string.app_name))
-                                .setMessage(context.getString(R.string.message_new_update) + System.lineSeparator() + "v" + appVersionCode + " ➠ v" + currentAppVersionCode)
+                                .setMessage(context.getString(R.string.message_new_update) + System.lineSeparator() + news + System.lineSeparator() + "v" + appVersionName + " ➠ v" + currentAppVersionName)
                                 .setPositiveButton(context.getString(R.string.ok), new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
