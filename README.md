@@ -1,3 +1,5 @@
+![License: All Rights Reserved](https://img.shields.io/badge/License-All%20Rights%20Reserved-red)
+
 # Project DriveOn
 
 Android application to monitor and record the driving behavior of a driver.
