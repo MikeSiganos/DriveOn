@@ -42,4 +42,4 @@ Mike Siganos
 
 
 ## License
-[GNU GPLv3](https://choosealicense.com/licenses/gpl-3.0/)
+>This project is protected by ©️ copyright. **The portfolio is intended for viewing only. All content is protected by ©️ copyright, and copying - reproduction, modification, or redistribution is strictly prohibited without explicit permission.**
